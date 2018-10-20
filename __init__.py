@@ -20,6 +20,9 @@ import asyncio, time, re, traceback
 from .regex import Regex
 
 class Client():
+	#system utils
+	from .utils import send_pass, send_nick, send_content, add_traffic, send_query
+
 	def __init__(self, token=None, nickname=None):
 
 		self.running = False
@@ -27,7 +30,7 @@ class Client():
 
 		self.token = token
 		self.nickname = nickname
-		self.host = "irc.ppy.tv"
+		self.host = "irc.ppy.sh"
 		self.port = 6667
 		self.last_ping = time.time()
 
@@ -89,6 +92,54 @@ class Client():
 		while self.running:
 
 			payload = await self.connection_reader.readuntil(separator=b'\r\n')
-			#asyncio.ensure_future( self.on_raw_data(payload) )
+			asyncio.ensure_future( self.on_raw_data(payload) )
 			payload = payload.decode('UTF-8')
+
+	#events
+	async def on_error(self, exeception):
+		"""
+		Attributes:
+		`exeception`  =  type :: Exeception
+
+		called every time something goes wrong
+		"""
+		print(exeception)
+		traceback.print_exc()
+
+	async def on_limit(self):
+		"""
+		Attributes:
+		None
+
+		called every time a request was not send because it hit the twitch limit,
+		the request is stored and send as soon as possible
+		"""
+		pass
+
+	async def on_raw_data(self, raw):
+		"""
+		Attributes:
+		`raw`  =  type :: bytes
+
+		called every time some bytes of data get received by the client
+		"""
+		pass
+
+	async def on_ready(self):
+		"""
+		Attributes:
+		None
+
+		called when the client is connected to twitch and is ready to receive or send data
+		"""
+		pass
+
+	async def on_message(self, message):
+		"""
+		Attributes:
+		`message` = object :: Message
+
+		called when the client received a message in a channel
+		"""
+		pass
 
