@@ -12,6 +12,7 @@ but usable to any purpose
 :license: MIT License
 
 - Inspired by the code of Rapptz's Discord library (function names and usage)
+- Basicly a copy of my twitch_irc library, just for osu!
 
 """
 
@@ -21,7 +22,13 @@ from .regex import Regex
 
 class Client():
 	#system utils
-	from .utils import send_pass, send_nick, send_content, add_traffic, send_query
+	from .utils import send_pass, send_nick, send_content, add_traffic, send_query, send_pong
+
+	#commands
+	from .commands import send_message
+
+	#handler
+	from .handler import handle_on_message
 
 	def __init__(self, token=None, nickname=None):
 
@@ -91,10 +98,33 @@ class Client():
 		#listen to osu
 		while self.running:
 
-			payload = await self.connection_reader.readuntil(separator=b'\r\n')
+			payload = await self.connection_reader.readuntil(separator=b'\n')
 			asyncio.ensure_future( self.on_raw_data(payload) )
-			payload = payload.decode('UTF-8')
+			payload = payload.decode('UTF-8').strip("\n").strip("\r")
 
+			#just to be sure
+			if payload in ["", " ", None]: raise ConnectionResetError()
+
+			# last ping is over 6min (way over twitch normal response)
+			if (time.time() - self.last_ping) > 60*6: raise ConnectionResetError()
+
+			# ignore QUIT for now
+			# there are just to many... maybe someday made something with this
+			if 'cho@ppy.sh' in payload:
+				continue
+
+			#response to PING
+			elif re.match(Regex.ping, payload) != None:
+				self.last_ping = time.time()
+				await self.send_pong()
+
+			#on_ready
+			elif re.match(Regex.on_ready, payload) != None:
+				asyncio.ensure_future( self.on_ready() )
+
+			#on_message
+			elif re.match(Regex.on_message, payload) != None:
+				await self.handle_on_message(payload)
 	#events
 	async def on_error(self, exeception):
 		"""
