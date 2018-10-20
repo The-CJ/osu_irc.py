@@ -19,6 +19,7 @@ class Message(object):
 		self.name = None 							# str
 		self.channel_name = None					# str
 		self.content = None 						# str
+		self.type = None							# "pm" | "channel"
 
 		self.process()
 		del self.raw
@@ -29,7 +30,7 @@ class Message(object):
 		if search != None:
 			self.name = search.group(1)
 
-		#username
+		#channel_name
 		search = re.search(Regex.Message.channel_name, self.raw)
 		if search != None:
 			self.channel_name = search.group(1)
@@ -38,4 +39,11 @@ class Message(object):
 		search = re.search(Regex.Message.content, self.raw)
 		if search != None:
 			self.content = search.group(1)
+
+		#type
+		if type(self.channel_name) == str and self.channel_name.startswith("#"):
+			self.type = "channel"
+		else:
+			self.type = "pm"
+
 

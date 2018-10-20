@@ -2,7 +2,7 @@ import asyncio
 
 async def send_message(self, channel, message):
 	channel = channel.lower().strip('#')
-	await self.send_content( "PRIVMSG {0} :{1}\r\n".format(channel, message) )
+	await self.send_content( "PRIVMSG #{0} :{1}\r\n".format(channel, message) )
 
 async def send_pm(self, user, message):
 	user = user.lower().strip('#')
