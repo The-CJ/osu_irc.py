@@ -5,8 +5,9 @@ class Regex(object):
 
 	ping = re.compile(r'^PING')
 	on_ready = re.compile(r"^:cho\.ppy\.sh 001.*")
-	on_message = re.compile(r"^:(.+?)!cho\.ppy\.sh PRIVMSG :.*")
+	on_message = re.compile(r"^:(.+?)!cho\@ppy\.sh PRIVMSG .+? :.*")
 
 	class Message(object):
 		username = re.compile(r'^:(.+?)!')
+		channel_name = re.compile(r'PRIVMSG (.+?) :')
 		content = re.compile(r'^:.+? :(.+)')
