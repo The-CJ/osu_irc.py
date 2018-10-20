@@ -1,4 +1,5 @@
 from .regex import Regex
+import re
 
 class Message(object):
 	""" This class is generated when a user is sending a message, it turns raw data like:
@@ -16,6 +17,7 @@ class Message(object):
 		self.raw = raw_data           				# str
 
 		self.name = None 							# str
+		self.channel_name = None					# str
 		self.content = None 						# str
 
 		self.process()
@@ -26,6 +28,11 @@ class Message(object):
 		search = re.search(Regex.Message.username, self.raw)
 		if search != None:
 			self.name = search.group(1)
+
+		#username
+		search = re.search(Regex.Message.channel_name, self.raw)
+		if search != None:
+			self.channel_name = search.group(1)
 
 		#content
 		search = re.search(Regex.Message.content, self.raw)

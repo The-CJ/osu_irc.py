@@ -1,4 +1,5 @@
 import asyncio
+from .message import Message 
 
 async def handle_on_message(self, payload):
 	"""
