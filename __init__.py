@@ -25,7 +25,7 @@ class Client():
 	from .utils import send_pass, send_nick, send_content, add_traffic, send_query, send_pong
 
 	#commands
-	from .commands import send_message
+	from .commands import send_message, join_channel, part_channel
 
 	#handler
 	from .handler import handle_on_message
@@ -110,11 +110,11 @@ class Client():
 
 			# ignore QUIT for now
 			# there are just to many... maybe someday made something with this
-			if 'cho@ppy.sh' in payload:
+			if 'cho@ppy.sh QUIT' in payload:
 				continue
 
 			#response to PING
-			elif re.match(Regex.ping, payload) != None:
+			if re.match(Regex.ping, payload) != None:
 				self.last_ping = time.time()
 				await self.send_pong()
 
