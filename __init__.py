@@ -32,6 +32,7 @@ class Client():
 
 	def __init__(self, token=None, nickname=None):
 
+		self.auth_success = False
 		self.running = False
 		self.query_running = False
 
@@ -85,6 +86,7 @@ class Client():
 				self.last_ping = time.time()
 				self.query_running = True
 				asyncio.ensure_future(self.send_query())
+				self.auth_success = False
 				await self.listen()
 
 			except Exception as e:
@@ -118,8 +120,14 @@ class Client():
 				self.last_ping = time.time()
 				await self.send_pong()
 
+			#wrong_auth
+			elif not self.auth_success and re.match(Regex.wrong_auth, payload) != None:
+				asyncio.ensure_future( self.on_error(ConnectionRefusedError("wrong_auth")) )
+				self.stop()
+
 			#on_ready
 			elif re.match(Regex.on_ready, payload) != None:
+				self.auth_success = True
 				asyncio.ensure_future( self.on_ready() )
 
 			#on_message
@@ -141,7 +149,7 @@ class Client():
 		Attributes:
 		None
 
-		called every time a request was not send because it hit the twitch limit,
+		called every time a request was not send because it hit the limit,
 		the request is stored and send as soon as possible
 		"""
 		pass
@@ -160,7 +168,7 @@ class Client():
 		Attributes:
 		None
 
-		called when the client is connected to twitch and is ready to receive or send data
+		called when the client is connected to osu and is ready to receive or send data
 		"""
 		pass
 
