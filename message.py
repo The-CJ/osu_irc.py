@@ -6,7 +6,7 @@ class Message(object):
 
 		`raw_data` = type :: str
 
-        :The_CJ!cho@ppy.sh PRIVMSG Phaazebot :Test Message :D
+		:The_CJ!cho@ppy.sh PRIVMSG Phaazebot :Test Message :D
 
 		into a usable class
 	"""
@@ -14,9 +14,9 @@ class Message(object):
 		return self.content
 
 	def __init__(self, raw_data):
-		self.raw = raw_data           				# str
+		self.raw = raw_data							# str
 
-		self.name = None 							# str
+		self.name = None							# str
 		self.channel_name = None					# str
 		self.content = None 						# str
 		self.type = None							# "pm" | "channel"

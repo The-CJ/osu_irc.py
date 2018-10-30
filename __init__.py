@@ -25,7 +25,7 @@ class Client():
 	from .utils import send_pass, send_nick, send_content, add_traffic, send_query, send_pong
 
 	#commands
-	from .commands import send_message, join_channel, part_channel
+	from .commands import send_message, send_pm, join_channel, part_channel
 
 	#handler
 	from .handler import handle_on_message
