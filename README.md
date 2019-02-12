@@ -25,4 +25,5 @@ class MyBot(osu_irc.Client):
 x = MyBot()
 x.run(token="supersecret", nickname="cool_username")
 ```
-:copyright: 2018-2018 The_CJ
+Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc 
+:copyright: 2018-2019 The_CJ

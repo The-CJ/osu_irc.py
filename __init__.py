@@ -100,7 +100,7 @@ class Client():
 		#listen to osu
 		while self.running:
 
-			payload = await self.connection_reader.readuntil(separator=b'\n')
+			payload = await self.connection_reader.readline()
 			asyncio.ensure_future( self.on_raw_data(payload) )
 			payload = payload.decode('UTF-8').strip("\n").strip("\r")
 
