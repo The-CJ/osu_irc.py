@@ -30,6 +30,9 @@ class Client():
 	#handler
 	from .handler import handle_on_message
 
+	#error
+	from .error import InvalidAuth, PingTimeout, EmptyPayload
+
 	def __init__(self, token=None, nickname=None):
 
 		self.auth_success = False
@@ -89,11 +92,16 @@ class Client():
 				self.auth_success = False
 				await self.listen()
 
-			except Exception as e:
-				self.connection_writer.close()
-				self.query_running = False
+			except self.InvalidAuth as e:
+				self.stop()
 				await self.on_error(e)
-				await asyncio.sleep(5)
+
+			except Exception as e:
+				await self.on_error(e)
+				if self.running:
+					await asyncio.sleep(5)
+				else:
+					break
 
 	async def listen(self):
 
@@ -105,10 +113,10 @@ class Client():
 			payload = payload.decode('UTF-8').strip("\n").strip("\r")
 
 			#just to be sure
-			if payload in ["", " ", None]: raise ConnectionResetError()
+			if payload in ["", " ", None]: raise self.EmptyPayload()
 
 			# last ping is over 6min (way over twitch normal response)
-			if (time.time() - self.last_ping) > 60*6: raise ConnectionResetError()
+			if (time.time() - self.last_ping) > 60*6: raise self.PingTimeout()
 
 			# ignore QUIT for now
 			# there are just to many... maybe someday made something with this
@@ -122,11 +130,12 @@ class Client():
 
 			#wrong_auth
 			elif not self.auth_success and re.match(Regex.wrong_auth, payload) != None:
-				asyncio.ensure_future( self.on_error(ConnectionRefusedError("wrong_auth")) )
-				self.stop()
+				raise self.InvalidAuth(str(payload))
 
 			#on_ready
 			elif re.match(Regex.on_ready, payload) != None:
+				if self.auth_success: #means we got a reconnect
+					asyncio.ensure_future( self.on_reconnect() )
 				self.auth_success = True
 				asyncio.ensure_future( self.on_ready() )
 
@@ -169,6 +178,15 @@ class Client():
 		None
 
 		called when the client is connected to osu and is ready to receive or send data
+		"""
+		pass
+
+	async def on_reconnect(self):
+		"""
+		Attributes:
+		None
+
+		called when the client is reconnected, is always followed by on_ready
 		"""
 		pass
 
