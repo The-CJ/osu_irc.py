@@ -96,6 +96,14 @@ class Client():
 				self.stop()
 				await self.on_error(e)
 
+			except self.EmptyPayload as e:
+				await self.on_error(e)
+				break
+
+			except self.PingTimeout as e:
+				await self.on_error(e)
+				break
+
 			except Exception as e:
 				await self.on_error(e)
 				if self.running:
@@ -115,7 +123,7 @@ class Client():
 			#just to be sure
 			if payload in ["", " ", None]: raise self.EmptyPayload()
 
-			# last ping is over 6min (way over twitch normal response)
+			# last ping is over 6min (way over osu's normal response)
 			if (time.time() - self.last_ping) > 60*6: raise self.PingTimeout()
 
 			# ignore QUIT for now
