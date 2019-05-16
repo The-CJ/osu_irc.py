@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+__version__ = "0.7.5"
+
 """
 ##################
 osu! IRC wrapper
@@ -206,4 +208,3 @@ class Client():
 		called when the client received a message in a channel
 		"""
 		pass
-
