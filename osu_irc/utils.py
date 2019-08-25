@@ -28,13 +28,3 @@ async def send_query(self):
 		else:
 			await asyncio.sleep(0.05)
 
-# # # # #
-
-async def send_pong(self):
-	await self.send_content( "PONG :cho.ppy.sh\r\n", ignore_limit=True )
-
-async def send_nick(self):
-	await self.send_content( "NICK {0}\r\n".format(self.nickname), ignore_limit=True )
-
-async def send_pass(self):
-	await self.send_content( "PASS {0}\r\n".format(self.token), ignore_limit=True )
