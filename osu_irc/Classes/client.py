@@ -5,6 +5,9 @@ import re
 from ..Utils.cmd import sendNick, sendPass, sendPong
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
+from ..Utils.handler import (
+	handleOnMessage
+)
 from ..Utils.regex import (
 	RePing, ReOnReady, ReOnMessage, ReWrongAuth
 )
@@ -144,7 +147,7 @@ class Client():
 
 			#onMessage
 			elif re.match(ReOnMessage, payload) != None:
-				await handleOnMessage(payload)
+				await handleOnMessage(self, payload)
 
 			#onReady
 			elif re.match(ReOnReady, payload) != None:

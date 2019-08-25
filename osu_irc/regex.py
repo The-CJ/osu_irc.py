@@ -9,6 +9,3 @@ class Regex(object):
 	on_message = re.compile(r"^:(.+?)!cho\@ppy\.sh PRIVMSG .+? :.*")
 
 	class Message(object):
-		username = re.compile(r'^:(.+?)!')
-		channel_name = re.compile(r'PRIVMSG (.+?) :')
-		content = re.compile(r'^:.+? :(.+)')
