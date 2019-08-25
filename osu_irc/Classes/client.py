@@ -153,6 +153,22 @@ class Client():
 			#on_message
 			elif re.match(Regex.on_message, payload) != None:
 				await self.handle_on_message(payload)
+
+	async def sendContent(self, content:bytes or str, ignore_limit:bool=False) -> None:
+		"""
+			used to send content of any type to osu
+		"""
+		if type(content) != bytes:
+			content = bytes(content, 'UTF-8')
+
+		if (self.traffic <= self.request_limit) or ignore_limit:
+			asyncio.ensure_future( addTraffic(self) )
+			self.ConnectionWriter.write( content )
+
+		else:
+			asyncio.ensure_future( self.onLimit(content) )
+			self.stored_traffic.append( content )
+
 	#events
 	async def on_error(self, exeception):
 		"""
