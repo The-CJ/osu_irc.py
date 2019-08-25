@@ -12,6 +12,9 @@ class Message(object):
 
 		into a usable class
 	"""
+	def __repr__(self):
+		return f"<{self.__class__.__name__} channel='{self.channel_name}' user='{self.user_name}'>"
+
 	def __str__(self):
 		return self.content
 
@@ -23,11 +26,11 @@ class Message(object):
 
 		self.build(raw)
 
-	def build(self, raw:str):
+	def build(self, raw:str) -> None:
 		#user_name
 		search = re.search(ReUsername, raw)
 		if search != None:
-			self.name = search.group(1)
+			self.user_name = search.group(1)
 
 		#channel_name
 		search = re.search(ReRoomName, raw)
