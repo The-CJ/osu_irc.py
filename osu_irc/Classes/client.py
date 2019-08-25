@@ -5,7 +5,9 @@ import re
 from ..Utils.cmd import sendNick, sendPass, sendPong
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
-
+from ..Utils.regex import (
+	RePing, ReOnReady, ReOnMessage, ReWrongAuth
+)
 class Client():
 	"""
 		Main class for everything.
@@ -119,15 +121,16 @@ class Client():
 		#listen to osu
 		while self.running:
 
-			payload = await self.connection_reader.readline()
-			asyncio.ensure_future( self.on_raw_data(payload) )
-			payload = payload.decode('UTF-8').strip("\n").strip("\r")
+			payload:bytes = await self.ConnectionReader.readline()
+			asyncio.ensure_future( self.onRaw(payload) )
+			payload:str = payload.decode('UTF-8').strip("\n").strip("\r")
 
 			#just to be sure
-			if payload in ["", " ", None]: raise self.EmptyPayload()
+			if payload in ["", " ", None] or not payload: raise EmptyPayload()
 
 			# last ping is over 6min (way over osu's normal response)
-			if (time.time() - self.last_ping) > 60*6: raise self.PingTimeout()
+			if (time.time() - self.last_ping) > 60*6:
+				raise PingTimeout()
 
 			# ignore QUIT for now
 			# there are just to many... maybe someday made something with this
@@ -135,24 +138,25 @@ class Client():
 				continue
 
 			#response to PING
-			if re.match(Regex.ping, payload) != None:
+			elif re.match(RePing, payload) != None:
 				self.last_ping = time.time()
-				await self.send_pong()
+				await sendPong(self)
 
-			#wrong_auth
-			elif not self.auth_success and re.match(Regex.wrong_auth, payload) != None:
-				raise self.InvalidAuth(str(payload))
+			#onMessage
+			elif re.match(ReOnMessage, payload) != None:
+				await handleOnMessage(payload)
 
-			#on_ready
-			elif re.match(Regex.on_ready, payload) != None:
-				if self.auth_success: #means we got a reconnect
-					asyncio.ensure_future( self.on_reconnect() )
+			#onReady
+			elif re.match(ReOnReady, payload) != None:
+				if self.auth_success:
+					#means we got a reconnect
+					asyncio.ensure_future( self.onReconnect() )
 				self.auth_success = True
-				asyncio.ensure_future( self.on_ready() )
+				asyncio.ensure_future( self.onReady() )
 
-			#on_message
-			elif re.match(Regex.on_message, payload) != None:
-				await self.handle_on_message(payload)
+			elif not self.auth_success:
+				if re.match(ReWrongAuth, payload) != None:
+					raise InvalidAuth( payload )
 
 	async def sendContent(self, content:bytes or str, ignore_limit:bool=False) -> None:
 		"""
@@ -170,58 +174,42 @@ class Client():
 			self.stored_traffic.append( content )
 
 	#events
-	async def on_error(self, exeception):
+	async def onError(self, Ex:Exception) -> None:
 		"""
-		Attributes:
-		`exeception`  =  type :: Exeception
-
-		called every time something goes wrong
+			called every time something goes wrong
 		"""
-		print(exeception)
+		print(Ex)
 		traceback.print_exc()
 
-	async def on_limit(self):
+	async def onLimit(self, payload:bytes) -> None:
 		"""
-		Attributes:
-		None
-
-		called every time a request was not send because it hit the limit,
-		the request is stored and send as soon as possible
+			called every time a request was not send because it hit the limit,
+			the request is stored and send as soon as possible
 		"""
 		pass
 
-	async def on_raw_data(self, raw):
+	async def onRaw(self, raw:bytes) -> None:
 		"""
-		Attributes:
-		`raw`  =  type :: bytes
-
-		called every time some bytes of data get received by the client
+			called every time some bytes of data get received by the client
 		"""
 		pass
 
-	async def on_ready(self):
+	async def onReady(self) -> None:
 		"""
-		Attributes:
-		None
-
-		called when the client is connected to osu and is ready to receive or send data
+			called when the client is connected to bancho and is ready to receive or send data
 		"""
 		pass
 
-	async def on_reconnect(self):
+	async def onReconnect(self) -> None:
 		"""
-		Attributes:
-		None
-
-		called when the client is reconnected, is always followed by on_ready
+			called when the client was already connected but was/had to reconnect
+			if already connected a onReconnect and onReady fire at the same time
 		"""
 		pass
 
-	async def on_message(self, message):
+	async def onMessage(self, Msg:"Message") -> None:
 		"""
-		Attributes:
-		`message` = object :: Message
-
-		called when the client received a message in a channel
+			called when the client received a message in a channel
 		"""
 		pass
+
