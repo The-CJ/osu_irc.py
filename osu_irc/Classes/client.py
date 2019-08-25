@@ -2,6 +2,7 @@ import time
 import asyncio
 import traceback
 import re
+from .message import Message
 from ..Utils.cmd import sendNick, sendPass, sendPong
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
@@ -175,6 +176,9 @@ class Client():
 		else:
 			asyncio.ensure_future( self.onLimit(content) )
 			self.stored_traffic.append( content )
+
+	# commands
+	from ..Utils.commands import sendMessage, sendPM, joinChannel, partChannel
 
 	#events
 	async def onError(self, Ex:Exception) -> None:
