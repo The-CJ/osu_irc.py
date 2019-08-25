@@ -2,6 +2,9 @@ import time
 import asyncio
 import traceback
 import re
+from ..Utils.cmd import sendNick, sendPass, sendPong
+from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
+from ..Utils.traffic import addTraffic, trafficQuery
 
 class Client():
 	"""
@@ -84,26 +87,28 @@ class Client():
 				await sendNick(self)
 
 				#start listen
-				self.last_ping = time.time()
-				self.query_running = True
-				asyncio.ensure_future(self.send_query())
-				self.auth_success = False
+				asyncio.ensure_future( trafficQuery(self) )
 				await self.listen()
 
-			except self.InvalidAuth as e:
+			except InvalidAuth as E:
 				self.stop()
-				await self.on_error(e)
+				await self.onError(E)
 
-			except self.EmptyPayload as e:
-				await self.on_error(e)
+			except EmptyPayload as E:
+				await self.onError(E)
 				break
 
-			except self.PingTimeout as e:
-				await self.on_error(e)
+			except PingTimeout as E:
+				await self.onError(E)
 				break
 
-			except Exception as e:
-				await self.on_error(e)
+			except KeyboardInterrupt as E:
+				await self.onError(E)
+				self.stop()
+				break
+
+			except Exception as E:
+				await self.onError(E)
 				if self.running:
 					await asyncio.sleep(5)
 				else:
