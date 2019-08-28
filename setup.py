@@ -9,7 +9,7 @@ with open(f"{here}/requirements.txt", "r") as req:
   requirements = req.read().splitlines()
 
 try:
-	version = re.findall(r"^__version__\s?=\s?[\'\"](.+)[\'\"]$", open("osu_irc.py/__init__.py").read(), re.M)[0]
+	version = re.findall(r"^__version__\s?=\s?[\'\"](.+)[\'\"]$", open("osu_irc/__init__.py").read(), re.M)[0]
 except IndexError:
 	raise RuntimeError('Unable to determine version.')
 
