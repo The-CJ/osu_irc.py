@@ -13,17 +13,18 @@ import asyncio, osu_irc
 
 class MyBot(osu_irc.Client):
 
-  async def on_ready(self):
+  async def onReady(self):
+    self.joinChannel("#osu")
     #do something
 
-  async def on_message(self, message):
+  async def onMessage(self, message):
     print(message.content)
 
     # do more with your code
 
 
 x = MyBot()
-x.run(token="supersecret", nickname="cool_username")
+x.run(token="1234567890", nickname="cool_username")
 ```
-Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc 
+Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc
 :copyright: 2018-2019 The_CJ
