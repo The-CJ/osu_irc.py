@@ -24,7 +24,7 @@ setuptools.setup(
 	url="https://github.com/The-CJ/osu_irc.py",
 	license="MIT",
 	install_requires=requirements,
-	packages=["osu_irc"],
+	packages=setuptools.find_packages(),
 	classifiers=[
 		"Programming Language :: Python :: 3.7",
 		"License :: OSI Approved :: MIT License",
