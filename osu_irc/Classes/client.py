@@ -9,6 +9,9 @@ import time
 import asyncio
 import traceback
 from .message import Message
+from .stores import ChannelStore, UserStore
+from .channel import Channel
+from .user import User
 from ..Utils.cmd import sendNick, sendPass
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
@@ -41,8 +44,8 @@ class Client():
 		self.ConnectionReader:asyncio.StreamReader = None
 		self.ConnectionWriter:asyncio.StreamWriter = None
 
-		# self.channels:Dict[ChannelName, Channel] = ChannelStore()
-		# self.users:Dict[UserName, User] = UserStore()
+		self.channels:Dict[ChannelName, Channel] = ChannelStore()
+		self.users:Dict[UserName, User] = UserStore()
 
 		self.request_limit:int = request_limit
 		self.traffic:int = 0
@@ -315,7 +318,7 @@ class Client():
 		called when the client received a message in a channel
 		"""
 		pass
-		
+
 	async def onGarbage(self, raw:str) -> None:
 		"""
 		called every time some bytes of data are known garbage that is no useful event
