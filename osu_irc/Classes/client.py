@@ -8,17 +8,17 @@ Log:logging.Logger = logging.getLogger("osu_irc")
 import time
 import asyncio
 import traceback
-import re
 from .message import Message
-from ..Utils.cmd import sendNick, sendPass, sendPong
+from ..Utils.cmd import sendNick, sendPass
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
-from ..Utils.handler import (
-	handleOnMessage
-)
-from ..Utils.regex import (
-	RePing, ReOnReady, ReOnMessage, ReWrongAuth
-)
+
+async def garbageDetector(*x, **xx):
+	pass
+
+async def mainEventDetector(*x, **xx):
+	pass
+
 class Client():
 	"""
 	Main class for everything.
@@ -41,8 +41,8 @@ class Client():
 		self.ConnectionReader:asyncio.StreamReader = None
 		self.ConnectionWriter:asyncio.StreamWriter = None
 
-		self.channels:Dict[ChannelName, Channel] = ChannelStore()
-		self.users:Dict[UserName, User] = UserStore()
+		# self.channels:Dict[ChannelName, Channel] = ChannelStore()
+		# self.users:Dict[UserName, User] = UserStore()
 
 		self.request_limit:int = request_limit
 		self.traffic:int = 0
@@ -133,8 +133,8 @@ class Client():
 			#reset bot storage
 			self.last_ping = time.time()
 			self.traffic = 0
-			self.channels = ChannelStore()
-			self.users = UserStore()
+			# self.channels = ChannelStore()
+			# self.users = UserStore()
 			self.query_running = True
 			self.auth_success = False
 			if self.ConnectionWriter:
@@ -250,13 +250,17 @@ class Client():
 
 	async def sendContent(self, content:bytes or str, ignore_limit:bool=False) -> None:
 		"""
-			used to send content of any type to osu
+		used to send content of any type to osu
+		pretty much all content should be sended via a other function like, sendMessage, sendPM or whatever
+		else that chance that the server understands what you want is near 0
 		"""
 		if type(content) != bytes:
 			content = bytes(content, 'UTF-8')
 
 		if (self.traffic <= self.request_limit) or ignore_limit:
 			asyncio.ensure_future( addTraffic(self) )
+			asyncio.ensure_future( self.onSend(content) )
+			Log.debug(f"Client sending {len(content)} bytes of content to the ConnectionWriter")
 			self.ConnectionWriter.write( content )
 
 		else:
@@ -269,39 +273,57 @@ class Client():
 	#events
 	async def onError(self, Ex:Exception) -> None:
 		"""
-			called every time something goes wrong
+		called every time something goes wrong
 		"""
 		print(Ex)
 		traceback.print_exc()
 
 	async def onLimit(self, payload:bytes) -> None:
 		"""
-			called every time a request was not send because it hit the limit,
-			the request is stored and send as soon as possible
+		called every time a request was not send because it hit the limit,
+		the request is stored and send as soon as possible
 		"""
 		pass
 
 	async def onRaw(self, raw:bytes) -> None:
 		"""
-			called every time some bytes of data get received by the client
+		called every time some bytes of data get received by the client
+		"""
+		pass
+
+	async def onSend(self, raw:bytes) -> None:
+		"""
+		called every time some bytes of data get send by the client
 		"""
 		pass
 
 	async def onReady(self) -> None:
 		"""
-			called when the client is connected to bancho and is ready to receive or send data
+		called when the client is connected to bancho and is ready to receive or send data
 		"""
 		pass
 
 	async def onReconnect(self) -> None:
 		"""
-			called when the client was already connected but was/had to reconnect
-			if already connected a onReconnect and onReady fire at the same time
+		called when the client was already connected but was/had to reconnect
+		if already connected a onReconnect and onReady fire at the same time
 		"""
 		pass
 
 	async def onMessage(self, Msg:"Message") -> None:
 		"""
-			called when the client received a message in a channel
+		called when the client received a message in a channel
+		"""
+		pass
+		
+	async def onGarbage(self, raw:str) -> None:
+		"""
+		called every time some bytes of data are known garbage that is no useful event
+		"""
+		pass
+
+	async def onUnknown(self, raw:str) -> None:
+		"""
+		called every time some bytes of data could not be processed to another event
 		"""
 		pass
