@@ -21,7 +21,7 @@ class Channel(object):
 	def __init__(self, raw:str or None):
 
 		self._name:str = UNDEFINED
-		self._chatter:Dict[UserName, User] = UserStore()
+		self._chatters:Dict[UserName, User] = UserStore()
 
 		if raw != None:
 			try:
@@ -40,3 +40,14 @@ class Channel(object):
 		"""
 		generated hey we (the client user) joins a channel
 		"""
+
+	@property
+	def chatters(self) -> Dict[UserName, User]:
+		return self._chatters
+	@property
+	def users(self) -> Dict[UserName, User]:
+		return self.chatters
+
+	@property
+	def name(self) -> str:
+		return str(self._name or "")
