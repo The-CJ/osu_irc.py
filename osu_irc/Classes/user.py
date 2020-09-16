@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING, Set, List
 if TYPE_CHECKING:
 	from .client import Client
 	from .channel import Channel
@@ -59,6 +59,28 @@ class User(object):
 		search = re.search(ReRoomName, raw)
 		if search != None:
 			self._generated_via_channel = search.group(1)
+
+	# func
+	def foundInChannels(self, cls:"Client") -> List["Channel"]:
+		"""
+		Returns a list of channels this user is currently in,
+		requires you to give this function the Client class, don't ask why...
+		Like this:
+		```
+		async def onUserJoin(self, NewChan, SomeUser):
+			channels_a_user_is_in = SomeUser.foundInChannels(self)
+			print(f"{SomeUser.name} is now in {len(channels_a_user_is_in)} different channels")
+		```
+		"""
+
+		ret:List["Channel"] = []
+
+		for channel_name in self.found_in:
+
+			Ch:"Channel" = cls.channels.get(channel_name, None)
+			if Ch: ret.append(Ch)
+
+		return ret
 
 	# props
 	@property

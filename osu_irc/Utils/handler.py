@@ -64,8 +64,42 @@ async def handlePart(cls:"Client", payload:str) -> bool:
 	may calls the following events for custom code:
 	- onMemberPart(Channel, User)
 	"""
-	return True
+	PartUser:User = User(payload)
 
+	# ignore self but use it to update clients channel dict
+	if PartUser.name.lower() == cls.nickname.lower():
+
+		# if we got a part for our user... well guess we can delete the channel then, right?
+		Log.debug(f"Client parted a channel, removing {PartUser._generated_via_channel}")
+		cls.channels.pop(PartUser._generated_via_channel, None)
+
+		return True
+
+	# let's see if we got this user already
+	KnownUser:User = cls.users.get(PartUser.name, None)
+	if not KnownUser:
+		# we never saw this user, even duh we got a leave.
+		KnownUser = PartUser
+
+	Chan:Channel = cls.channels.get(PartUser._generated_via_channel, None)
+	if not Chan:
+		# that should never happen... but if it does... well fuck
+		Log.error(f"Could not find channel for {PartUser._generated_via_channel}")
+		return True
+
+	# remove User from chatters dict of channel
+	Chan.chatters.pop(KnownUser.name, None)
+	# and remove it from the Users known channels
+	KnownUser.found_in.discard(Chan.name)
+
+	# the user left the last channel we monitor, he now is useless for us
+	if len(KnownUser.found_in) == 0:
+		cls.users.pop(KnownUser, None)
+
+	Log.debug(f"Client launching: Client.onMemberPart: {str(vars(Chan))} {str(vars(KnownUser))}")
+	asyncio.ensure_future( cls.onMemberPart(Chan, KnownUser) )
+	return True
+	
 async def handleQuit(cls:"Client", payload:str) -> bool:
 	"""
 	handles all QUIT events, an ooo boi ate there a lot of them
