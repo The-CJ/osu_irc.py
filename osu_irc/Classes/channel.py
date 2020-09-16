@@ -1,4 +1,4 @@
-from typing import Dict, NewType
+from typing import Dict, NewType, Set
 UserName = NewType("UserName", str)
 
 from .user import User
@@ -22,6 +22,13 @@ class Channel(object):
 
 		self._name:str = UNDEFINED
 		self._chatters:Dict[UserName, User] = UserStore()
+
+		# because of user stores, we save the name of the different user types in a channel
+		self._owner:Set[str] = set() # ~
+		self._admin:Set[str] = set() # @
+		self._operator:Set[str] = set() # &
+		self._helper:Set[str] = set() # %
+		self._voiced:Set[str] = set() # +
 
 		# other than twitch, this class dosn't has a build function,
 		# because it should only be created by a handler (probl. mostly handleJoin)
