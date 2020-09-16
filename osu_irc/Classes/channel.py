@@ -18,16 +18,13 @@ class Channel(object):
 	def __str__(self):
 		return self.name or ""
 
-	def __init__(self, raw:str or None):
+	def __init__(self, *x, **xx):
 
 		self._name:str = UNDEFINED
 		self._chatters:Dict[UserName, User] = UserStore()
 
-		if raw != None:
-			try:
-				self.channelBuild(raw)
-			except:
-				raise AttributeError(raw)
+		# other than twitch, this class dosn't has a build function,
+		# because it should only be created by a handler (probl. mostly handleJoin)
 
 	def compact(self) -> dict:
 		d:dict = {}
@@ -35,12 +32,7 @@ class Channel(object):
 		d["chatter"] = self.chatter
 		return d
 
-	# utils
-	def channelBuild(self, raw:str) -> None:
-		"""
-		generated hey we (the client user) joins a channel
-		"""
-
+	# props
 	@property
 	def chatters(self) -> Dict[UserName, User]:
 		return self._chatters
