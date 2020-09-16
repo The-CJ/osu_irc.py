@@ -84,8 +84,7 @@ async def handleUserList(cls:"Client", payload:str) -> bool:
 	- None
 	"""
 
-	# e.g.: :cho.ppy.sh 353 Phaazebot = #osu :The_CJ Someone +SomeoneViaIRC
-	return True
+	# e.g.: :cho.ppy.sh 353 Phaazebot = #osu :The_CJ SomeoneElse +SomeoneViaIRC @SomeModerator
 	search:re.Match = re.search(ReUserListData, payload)
 	if search != None:
 		room_name:str = search.group(1)
@@ -95,18 +94,35 @@ async def handleUserList(cls:"Client", payload:str) -> bool:
 		full_user_list:str = search.group(2)
 		for user_name in full_user_list.split(' '):
 
-			if user_name.lower() == cls.nickname.lower(): continue
+			# for whatever reason, osu! likes giving empty cahrs at the end... thanks i guess?
+			if user_name.lower() in ['', ' ', cls.nickname.lower()]: continue
+
+			# check user type and change name, also add to usertype set
+			if user_name.startswith('~'):
+				user_name = user_name[1:]
+				ChannelToFill._owner.add(user_name)
+			if user_name.startswith('&'):
+				user_name = user_name[1:]
+				ChannelToFill._admin.add(user_name)
+			if user_name.startswith('@'):
+				user_name = user_name[1:]
+				ChannelToFill._operator.add(user_name)
+			if user_name.startswith('%'):
+				user_name = user_name[1:]
+				ChannelToFill._helper.add(user_name)
+			if user_name.startswith('+'):
+				user_name = user_name[1:]
+				ChannelToFill._voiced.add(user_name)
 
 			KnownUser:User = cls.users.get(user_name, None)
 			if not KnownUser:
 				KnownUser:User = User(None)
 				KnownUser._name = user_name
-				KnownUser.minimalistic = True
 
 				cls.users[KnownUser.name] = KnownUser
 
 			Log.debug(f"New Entry to `already-known-user-list`: {ChannelToFill.name} - {KnownUser.name}")
-			ChannelToFill.viewers[KnownUser.name] = KnownUser
+			ChannelToFill.chatters[KnownUser.name] = KnownUser
 			KnownUser.found_in.add(ChannelToFill.name)
 
 	return True
