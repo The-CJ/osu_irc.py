@@ -3,17 +3,18 @@ if TYPE_CHECKING:
     from ..Classes.client import Client
 
 import asyncio
-from ..Classes.message import Message
+# from ..Classes.message import Message
 # from .message import Message
 
-async def handleOnMessage(cls:"Client", payload:str):
+import logging
+Log:logging.Logger = logging.getLogger("osu_irc")
+
+async def handleQuit(cls:"Client", payload:str) -> bool:
 	"""
-	handles all messages and calls
-	self.onMessage(Message) for custom user code
+	handles all QUIT events
+
+	may calls the following events for custom code:
+	- onMemberQuit(User)
+
 	"""
-
-	# generate message
-	Msg = Message(payload)
-
-	asyncio.ensure_future( cls.onMessage( Msg ) )
-
+	return True

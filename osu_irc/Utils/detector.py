@@ -7,9 +7,12 @@ import time
 import asyncio
 from ..Utils.cmd import sendPong
 from ..Utils.errors import InvalidAuth
+from ..Utils.handler import (
+	handleQuit
+)
 from ..Utils.regex import (
 	ReGarbage, RePing, ReWrongAuth,
-	ReOnReady
+	ReOnReady, ReQuit
 )
 
 async def garbageDetector(cls:"Client", payload:str) -> bool:
@@ -33,6 +36,10 @@ async def mainEventDetector(cls:"Client", payload:str) -> bool:
 		cls.last_ping = time.time()
 		await sendPong(cls)
 		return True
+
+	# handels events: onQuit
+	if re.match(ReQuit, payload) != None:
+		return await handleQuit(cls, payload)
 
 	# handels events: onReady, onReconnect
 	if re.match(ReOnReady, payload) != None:
