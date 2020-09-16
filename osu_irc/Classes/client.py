@@ -220,32 +220,6 @@ class Client():
 				asyncio.ensure_future( self.onUnknown(payload) )
 				continue
 
-			# ignore QUIT for now
-			# there are just to many... maybe someday made something with this
-			# if 'cho@ppy.sh QUIT' in payload:
-			# 	continue
-			#
-			# #response to PING
-			# elif re.match(RePing, payload) != None:
-			# 	self.last_ping = time.time()
-			# 	await sendPong(self)
-			#
-			# #onMessage
-			# elif re.match(ReOnMessage, payload) != None:
-			# 	await handleOnMessage(self, payload)
-			#
-			# #onReady
-			# elif re.match(ReOnReady, payload) != None:
-			# 	if self.auth_success:
-			# 		#means we got a reconnect
-			# 		asyncio.ensure_future( self.onReconnect() )
-			# 	self.auth_success = True
-			# 	asyncio.ensure_future( self.onReady() )
-			#
-			# elif not self.auth_success:
-			# 	if re.match(ReWrongAuth, payload) != None:
-			# 		raise InvalidAuth( payload )
-
 	async def sendContent(self, content:bytes or str, ignore_limit:bool=False) -> None:
 		"""
 		used to send content of any type to osu
