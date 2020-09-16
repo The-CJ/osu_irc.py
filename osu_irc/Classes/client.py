@@ -131,8 +131,8 @@ class Client():
 			#reset bot storage
 			self.last_ping = time.time()
 			self.traffic = 0
-			# self.channels = ChannelStore()
-			# self.users = UserStore()
+			self.channels = ChannelStore()
+			self.users = UserStore()
 			self.query_running = True
 			self.auth_success = False
 			if self.ConnectionWriter:
