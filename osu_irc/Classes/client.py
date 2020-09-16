@@ -15,12 +15,7 @@ from .user import User
 from ..Utils.cmd import sendNick, sendPass
 from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
 from ..Utils.traffic import addTraffic, trafficQuery
-
-async def garbageDetector(*x, **xx):
-	pass
-
-async def mainEventDetector(*x, **xx):
-	pass
+from ..Utils.detector import mainEventDetector, garbageDetector
 
 class Client():
 	"""
