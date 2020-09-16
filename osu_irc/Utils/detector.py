@@ -8,11 +8,13 @@ import asyncio
 from ..Utils.cmd import sendPong
 from ..Utils.errors import InvalidAuth
 from ..Utils.handler import (
-	handleQuit
+	handleJoin, handlePart, handleQuit,
+	handleUserList, handlePrivMessage
 )
 from ..Utils.regex import (
 	ReGarbage, RePing, ReWrongAuth,
-	ReOnReady, ReQuit
+	ReOnReady, ReUserList, RePrivMessage,
+	ReJoin, RePart, ReQuit
 )
 
 async def garbageDetector(cls:"Client", payload:str) -> bool:
@@ -37,9 +39,25 @@ async def mainEventDetector(cls:"Client", payload:str) -> bool:
 		await sendPong(cls)
 		return True
 
+	# handels events: onJoin
+	if re.match(ReJoin, payload) != None:
+		return await handleJoin(cls, payload)
+
+	# handels events: onPart
+	if re.match(RePart, payload) != None:
+		return await handlePart(cls, payload)
+
 	# handels events: onQuit
 	if re.match(ReQuit, payload) != None:
 		return await handleQuit(cls, payload)
+
+	# handels events: onMessage
+	if re.match(RePrivMessage, payload) != None:
+		return await handlePrivMessage(cls, payload)
+
+	# handels events: None
+	if re.match(ReUserList, payload) != None:
+		return await handleUserList(cls, payload)
 
 	# handels events: onReady, onReconnect
 	if re.match(ReOnReady, payload) != None:
