@@ -12,7 +12,7 @@ import re
 import asyncio
 from ..Classes.channel import Channel
 from ..Classes.user import User
-from ..Utils.regex import ReUserListData
+from ..Utils.regex import ReUserListData, ReQuit
 
 async def handleJoin(cls:"Client", payload:str) -> bool:
 	"""
@@ -102,11 +102,34 @@ async def handlePart(cls:"Client", payload:str) -> bool:
 
 async def handleQuit(cls:"Client", payload:str) -> bool:
 	"""
-	handles all QUIT events, an ooo boi ate there a lot of them
+	handles all QUIT events, an ooo boi there a lot of them
+	this happens when a user closes the game, or a client disconnects by any means from the irc server
+	mostly this happens instantly with the reason: quit
+	or some time later with a timeout.
+
+	However, a user that quits will be deleted from all other channels, but there will not me a PART for every channel
 
 	may calls the following events for custom code:
-	- onMemberQuit(User)
+	- onMemberQuit(User, reason)
+	:Fenix005!cho@ppy.sh QUIT :quit
 	"""
+
+	# name and reason
+	search = re.search(ReQuit, payload)
+	if search == None:
+		# in case we don't find anything, just ignore it, just you should with all problems in life :3
+		return True
+
+	user_name:str = search.group(1)
+	reason:str = search.group(2)
+
+	QuitingUser:User = cls.users.get(user_name, None)
+	if not QuitingUser:
+		QuitingUser = User(None)
+		QuitingUser._name = user_name
+
+	Log.debug(f"Client launching: Client.onMemberQuit: {str(vars(QuitingUser))} {reason}")
+	asyncio.ensure_future( cls.onMemberQuit(QuitingUser, reason) )
 	return True
 
 async def handleUserList(cls:"Client", payload:str) -> bool:

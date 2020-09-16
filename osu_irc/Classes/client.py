@@ -300,6 +300,12 @@ class Client():
 		"""
 		pass
 
+	async def onMemberQuit(self, Us:User, reason:str) -> None:
+		"""
+		called when a user quits the osu! irc server
+		"""
+		pass
+
 	async def onGarbage(self, raw:str) -> None:
 		"""
 		called every time some bytes of data are known garbage that is no useful event
