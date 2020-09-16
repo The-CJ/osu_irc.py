@@ -288,6 +288,12 @@ class Client():
 		"""
 		pass
 
+	async def onMemberJoin(self, Chan:Channel, Us:User) -> None:
+		"""
+		called when a user joined a osu! channel
+		"""
+		pass
+
 	async def onGarbage(self, raw:str) -> None:
 		"""
 		called every time some bytes of data are known garbage that is no useful event
