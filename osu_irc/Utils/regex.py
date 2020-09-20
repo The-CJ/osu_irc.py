@@ -17,4 +17,5 @@ ReAction:"re.Pattern" = re.compile(r"\x01{1}ACTION (.+?)\x01{1}")
 
 # other
 ReUserName:"re.Pattern" = re.compile(r"(?:@|;| |^):(\S*?)!cho@ppy.sh[; ]")
-ReRoomName:"re.Pattern" = re.compile(r"[@; ](?:JOIN|PART|CLEARMSG|CLEARCHAT|ROOMSTATE|USERSTATE|PRIVMSG|USERNOTICE) :#(\S*?)(?:[; ]|$)")
+ReRoomName:"re.Pattern" = re.compile(r"[@; ][A-Z]+ :?(#?\S*?)(?:[; ]|$)")
+ReContent:"re.Pattern" = re.compile(r"[@; ][A-Z]+ #?\S+? :(.+)(?:[; ]|$)")

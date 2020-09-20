@@ -4,8 +4,8 @@ if TYPE_CHECKING:
 	from .channel import Channel
 
 import re
-from ..Utils.regex import ReUserName, ReRoomName
 from .undefined import UNDEFINED
+from ..Utils.regex import ReUserName, ReRoomName
 
 class User(object):
 	"""

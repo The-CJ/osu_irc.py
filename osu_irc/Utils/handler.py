@@ -10,6 +10,7 @@ Log:logging.Logger = logging.getLogger("osu_irc")
 
 import re
 import asyncio
+from ..Classes.message import Message
 from ..Classes.channel import Channel
 from ..Classes.user import User
 from ..Utils.regex import ReUserListData, ReQuit
@@ -200,4 +201,42 @@ async def handlePrivMessage(cls:"Client", payload:str) -> bool:
 	may calls the following events for custom code:
 	- onMessage(Message)
 	"""
+	# generate message
+	Msg:Message = Message(payload)
+
+	#get Channel
+	Chan:Channel = cls.channels.get(Msg.room_name, None)
+	if Chan:
+		Msg.Channel = Chan
+	else:
+		# should never happen, but ok
+		NewChan:Channel = Channel(None)
+		NewChan._name = Msg.room_name
+		cls.channels[NewChan.name] = NewChan
+		Msg.Channel = NewChan
+		Chan = NewChan
+		del NewChan
+
+	# get Author
+	Author:User = cls.users.get(Msg.user_name, None)
+	if Author:
+		Msg.Author = Author
+	else:
+		# you see, that's a thing i took from the twitch_irc, in theory it should not happen in osu!, but hey
+		Alternative:User = User(None)
+		Alternative._name = Msg.user_name
+
+		# add new user to client's user dict
+		cls.users[Alternative.name] = Alternative
+
+		Msg.Author = Alternative
+		Log.debug(f"Client launching: Client.onMemberJoin: {str(vars(Chan))} {str(vars(Alternative))}")
+		asyncio.ensure_future( cls.onMemberJoin(Chan, Alternative) )
+
+	# safty step, add author to channels chatter list, and channel to user
+	Msg.Channel.chatters[Msg.Author.name] = Msg.Author
+	Msg.Author.found_in.add(Msg.room_name)
+
+	Log.debug(f"Client launching: Client.onMessage: {str(vars(Msg))}")
+	asyncio.ensure_future( cls.onMessage(Msg) )
 	return True
