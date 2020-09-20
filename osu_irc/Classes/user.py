@@ -14,6 +14,17 @@ class User(object):
 
 	NOTE: all users from all channels can be found ion Client.users
 	NOTE 2: also there are no ID's because why should it, REEEEEEE (i really like ID's... :c)
+	NOTE 3*: sooo names with a space (' ') are replaced with a ('_') in IRC, yeah... keep that in mind, nothing i can do
+
+	```
+	* Note 3:
+	API        IRC
+	---        ---
+	The_CJ     The_CJ
+	P H Z      P_H_Z
+	-] [-      -]_[-
+	```
+
 	"""
 	def __repr__(self):
 		return f"<{self.__class__.__name__} name='{self.name}'>"
