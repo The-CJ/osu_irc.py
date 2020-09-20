@@ -284,7 +284,12 @@ class Client():
 
 	async def onMessage(self, Msg:"Message") -> None:
 		"""
-		called when the client received a message in a channel
+		called when the client received a message
+		should have a .Channel and .Author class have attached to it
+		PM have .is_private == True
+
+		Also: if Msg.is_private then Msg.room_name.lower() == self.nickname.lower()
+		[that what a private message is... duh]
 		"""
 		pass
 
