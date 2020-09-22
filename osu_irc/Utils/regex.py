@@ -3,7 +3,7 @@ import re
 # IRC events
 RePing:"re.Pattern" = re.compile(r"^PING.*")
 ReOnReady:"re.Pattern" = re.compile(r"^:cho\.ppy\.sh 001.*")
-ReGarbage:"re.Pattern" = re.compile(r"^.*cho\.ppy\.sh (366|375|372|376).*")
+ReGarbage:"re.Pattern" = re.compile(r"^.*cho\.ppy\.sh (333|366|375|372|376).*")
 ReWrongAuth:"re.Pattern" = re.compile(r"^:cho\.ppy\.sh 464.*")
 ReJoin:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh JOIN :(.+)")
 RePart:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh PART :(.+)")
