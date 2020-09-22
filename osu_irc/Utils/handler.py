@@ -251,15 +251,15 @@ async def handleMOTDEvent(cls:"Client", payload:str) -> bool:
 
 	# get data
 	Data:re.Match = re.search(ReMOTDInfo, payload)
-	if not Data: return
+	if not Data: return False
 
 	room_name:str = Data.group(1)
 	motd:str = Data.group(2)
-	if not motd: return
+	if not motd: return False
 
 	#get Channel
 	Chan:Channel = cls.channels.get(room_name, None)
-	if not Chan: return
+	if not Chan: return False
 
 	Chan.motd = motd
 	Log.debug(f"Changed motd of channel: {str(vars(Chan))} : {motd}")

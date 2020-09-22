@@ -42,7 +42,8 @@ class Channel(object):
 	def compact(self) -> dict:
 		d:dict = {}
 		d["name"] = self.name
-		d["chatter"] = self.chatter
+		d["motd"] = self.motd
+		d["chatters"] = self.chatters
 		return d
 
 	# utils
