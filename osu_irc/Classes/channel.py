@@ -20,11 +20,14 @@ class Channel(object):
 
 	def __init__(self, *x, **xx):
 
+		# props
 		self._name:str = UNDEFINED
 		self._chatters:Dict[UserName, User] = UserStore()
 
-		# because of user stores, we save the name of the different user types in a channel
+		# other
+		self.motd:str = ""
 
+		# because of user stores, we save the name of the different user types in a channel
 		# Update: sooo... em, yeah, in osu there are no IRC- Owner (~), Operator (&) or Helper (%)
 		# the Owner whould be BanchBot, i guess, but technicly these 3 could be taken out, but i don't give a fuck. REEEEEE
 		self._owner:Set[str] = set() # ~

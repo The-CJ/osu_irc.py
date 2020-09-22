@@ -13,7 +13,7 @@ import asyncio
 from ..Classes.message import Message
 from ..Classes.channel import Channel
 from ..Classes.user import User
-from ..Utils.regex import ReUserListData, ReQuit
+from ..Utils.regex import ReUserListData, ReQuit, ReMOTDInfo
 
 async def handleJoin(cls:"Client", payload:str) -> bool:
 	"""
@@ -239,4 +239,28 @@ async def handlePrivMessage(cls:"Client", payload:str) -> bool:
 
 	Log.debug(f"Client launching: Client.onMessage: {str(vars(Msg))}")
 	asyncio.ensure_future( cls.onMessage(Msg) )
+	return True
+
+async def handleMOTDEvent(cls:"Client", payload:str) -> bool:
+	"""
+	handles the 332 IRC Event which is like a MOTD for a channel
+
+	may calls the following events for custom code:
+	- None
+	"""
+
+	# get data
+	Data:re.Match = re.search(ReMOTDInfo, payload)
+	if not Data: return
+
+	room_name:str = Data.group(1)
+	motd:str = Data.group(2)
+	if not motd: return
+
+	#get Channel
+	Chan:Channel = cls.channels.get(room_name, None)
+	if not Chan: return
+
+	Chan.motd = motd
+	Log.debug(f"Changed motd of channel: {str(vars(Chan))} : {motd}")
 	return True

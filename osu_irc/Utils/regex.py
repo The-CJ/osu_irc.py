@@ -9,10 +9,12 @@ ReJoin:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh JOIN :(.+)")
 RePart:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh PART :(.+)")
 ReQuit:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh QUIT :(.+)")
 ReUserList:"re.Pattern" = re.compile(r"^:cho\.ppy\.sh 353.*")
-RePrivMessage:"re.Pattern" = re.compile(r"^:(.+?)!cho\@ppy\.sh PRIVMSG .+? :.*")
+ReMOTD:"re.Pattern" = re.compile(r"^:cho\.ppy\.sh 332.*")
+RePrivMessage:"re.Pattern" = re.compile(r"^:.+?!cho\@ppy\.sh PRIVMSG .+? :.*")
 
 # extended IRC Events
 ReUserListData:"re.Pattern" = re.compile(r".*353 .* = #(\S+?) :(.*)$")
+ReMOTDInfo:"re.Pattern" = re.compile(r"^:cho\.ppy\.sh 332 .+ #(\S+) :(.+)$")
 ReAction:"re.Pattern" = re.compile(r"\x01{1}ACTION (.+?)\x01{1}")
 
 # other
