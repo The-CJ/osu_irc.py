@@ -91,8 +91,13 @@ async def handlePart(cls:"Client", payload:str) -> bool:
 		Log.error(f"Could not find channel for {PartUser._generated_via_channel}")
 		return True
 
-	# remove User from chatters dict of channel
+	# remove User from chatters dict of channel, and also all other status sets
 	Chan.chatters.pop(KnownUser.name, None)
+	Chan._owner.discard(KnownUser.name)
+	Chan._admin.discard(KnownUser.name)
+	Chan._operator.discard(KnownUser.name)
+	Chan._helper.discard(KnownUser.name)
+	Chan._voiced.discard(KnownUser.name)
 	# and remove it from the Users known channels
 	KnownUser.found_in.discard(Chan.name)
 
@@ -137,6 +142,11 @@ async def handleQuit(cls:"Client", payload:str) -> bool:
 			Chan:Channel = cls.channels.get(channel_name, None)
 			if not Chan: continue
 			Chan.chatters.pop(QuitingUser.name, None)
+			Chan._owner.discard(QuitingUser.name)
+			Chan._admin.discard(QuitingUser.name)
+			Chan._operator.discard(QuitingUser.name)
+			Chan._helper.discard(QuitingUser.name)
+			Chan._voiced.discard(QuitingUser.name)
 
 		# and also remove it from clients user storage, which then should delete user object completly from memory
 		cls.users.pop(QuitingUser.name, None)
