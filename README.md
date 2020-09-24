@@ -5,7 +5,14 @@ but usable to any purpose
 
 > Inspired by the code of Rapptz's Discord library (function names and usage)
 
-## Usage
+## Install
+
+There are many ways. here my "prefered" one:
+```
+py -m pip install git+https://github.com/The-CJ/osu_irc.py.git#egg=osu_irc
+```
+
+## Example
 
 ```py
 import osu_irc
@@ -26,4 +33,4 @@ x = MyBot()
 x.run(token="1234567890", nickname="cool_username")
 ```
 Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc
-:copyright: 2018-2019 The_CJ
+:copyright: 2018-2020 The_CJ
