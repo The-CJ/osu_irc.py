@@ -15,7 +15,7 @@ but usable to any purpose
 - Basicly a copy of my twitch_irc.py library, just for osu!
 """
 
-__title__ = 'discord'
+__title__ = 'osu_irc'
 __author__ = 'The_CJ'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2018-2020 The_CJ'
