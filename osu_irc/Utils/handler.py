@@ -299,7 +299,9 @@ async def handleMode(cls:"Client", payload:str) -> bool:
 	if not Chan: return False
 
 	if operation == 'o':
-		Chan._operator.add(user_name) if state == '+' else Chan._operator.discard(user_name)
+		# well... basicly there should be added to operater, but osu only has admins, because on member list requests we get a:
+		# @username and not a &username, so it's an admin... at least for me, if im wrong, well fuck
+		Chan._admin.add(user_name) if state == '+' else Chan._admin.discard(user_name)
 		return True
 
 	if operation == 'v':
