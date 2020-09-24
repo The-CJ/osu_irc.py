@@ -21,7 +21,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2018-2020 The_CJ'
 __version__ = "1.0.0"
 
-from .Classes.user import User
-from .Classes.client import Client
 from .Classes.channel import Channel
+from .Classes.client import Client
 from .Classes.message import Message
+from .Classes.user import User
