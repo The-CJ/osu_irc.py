@@ -2,9 +2,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..Classes.client import Client
 
-# from ..Classes.message import Message
-# from .message import Message
-
 import logging
 Log:logging.Logger = logging.getLogger("osu_irc")
 
