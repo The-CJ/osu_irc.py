@@ -13,7 +13,10 @@ import asyncio
 from ..Classes.message import Message
 from ..Classes.channel import Channel
 from ..Classes.user import User
-from ..Utils.regex import ReUserListData, ReQuit, ReMOTDInfo
+from ..Utils.regex import (
+	ReUserListData, ReQuit, ReMOTDInfo,
+	ReModeInfo
+)
 
 async def handleJoin(cls:"Client", payload:str) -> bool:
 	"""
@@ -118,7 +121,7 @@ async def handleQuit(cls:"Client", payload:str) -> bool:
 	# name and reason
 	search = re.search(ReQuit, payload)
 	if search == None:
-		# in case we don't find anything, just ignore it, just you should with all problems in life :3
+		# in case we don't find anything, just ignore it, like you should with all problems in life :3
 		return True
 
 	user_name:str = search.group(1)
@@ -264,3 +267,33 @@ async def handleMOTDEvent(cls:"Client", payload:str) -> bool:
 	Chan.motd = motd
 	Log.debug(f"Changed motd of channel: {str(vars(Chan))} : {motd}")
 	return True
+
+async def handleMode(cls:"Client", payload:str) -> bool:
+	"""
+	handles all MODE events and updates channel status.
+
+	may calls the following events for custom code:
+	- None
+	"""
+
+	# get data
+	Data:re.Match = re.search(ReModeInfo, payload)
+	if not Data: return False
+
+	action_channel_name:str = Data.group(1)
+	state:str = Data.group(2) # + or -
+	operation:str = Data.group(3) # v or o
+	user_name:str = Data.group(4)
+
+	Chan:Channel = cls.channels.get(action_channel_name, None)
+	if not Chan: return False
+
+	if operation == 'o':
+		Chan._operator.add(user_name) if state == '+' else Chan._operator.discard(user_name)
+		return True
+
+	if operation == 'v':
+		Chan._voiced.add(user_name) if state == '+' else Chan._voiced.discard(user_name)
+		return True
+
+	return False
