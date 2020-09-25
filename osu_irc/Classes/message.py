@@ -12,6 +12,8 @@ from ..Utils.regex import (
 	ReAction
 )
 
+from ..Utils.commands import sendMessage, sendPM
+
 class Message(object):
 	"""
 	This class represents a message.
@@ -105,6 +107,11 @@ class Message(object):
 		if search != None:
 			self.is_action = True
 			self._content = search.group(1)
+
+	# need to give ctx for this to work
+	def reply(self, ctx, reply:str = 'No Response'):
+		if self._channel_type == 1: return sendMessage(ctx, self._room_name, reply)
+		if self._channel_type == 2: return sendPM(ctx, self._user_name, reply)
 
 	# props
 	@property
