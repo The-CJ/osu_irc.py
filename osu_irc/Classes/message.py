@@ -108,8 +108,11 @@ class Message(object):
 			self.is_action = True
 			self._content = search.group(1)
 
-	# need to give ctx for this to work
 	def reply(self, ctx, reply:str = 'No Response'):
+		"""
+		Reply function,
+		it needs ctx to work, reply is needed too but just incase it send 'No Response' if it doesnt get reply param
+		"""
 		if self._channel_type == 1: return sendMessage(ctx, self._room_name, reply)
 		if self._channel_type == 2: return sendPM(ctx, self._user_name, reply)
 
