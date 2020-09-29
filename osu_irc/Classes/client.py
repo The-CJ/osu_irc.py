@@ -13,7 +13,7 @@ from .stores import ChannelStore, UserStore
 from .channel import Channel
 from .user import User
 from ..Utils.cmd import sendNick, sendPass
-from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload
+from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload, InvalidCredentials
 from ..Utils.traffic import addTraffic, trafficQuery
 from ..Utils.detector import mainEventDetector, garbageDetector
 
@@ -155,10 +155,15 @@ class Client():
 				Log.debug("Client sended base data, continue to listen for response...")
 				await self.listen() # <- that processess stuff
 
-			except InvalidAuth as E:
+			except InvalidAuth:
 				Log.error("Invalid Auth for osu!, please check `token` and `nickname`, not trying to reconnect")
 				self.stop()
-				await self.onError(E)
+				continue
+
+			except InvalidCredentials:
+				Log.error("osu! never send any response, check credentials for syntax, not trying to reconnect")
+				self.stop()
+				continue
 
 			except EmptyPayload as E:
 				Log.error("Empty payload from osu, trying reconnect")
@@ -170,13 +175,7 @@ class Client():
 				await self.onError(E)
 				continue
 
-			except KeyboardInterrupt as E:
-				await self.onError(E)
-				self.stop()
-				break
-
-			except KeyboardInterrupt as E:
-				await self.onError(E)
+			except KeyboardInterrupt :
 				self.stop()
 				continue
 
@@ -200,7 +199,10 @@ class Client():
 
 			#just to be sure
 			if payload in ["", " ", None] or not payload:
-				raise EmptyPayload()
+				if self.auth_success:
+					raise EmptyPayload()
+				else:
+					raise InvalidCredentials()
 
 			# last ping is over 6min (way over twitch normal response)
 			if (time.time() - self.last_ping) > 60*6:

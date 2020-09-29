@@ -19,9 +19,12 @@ __title__ = 'osu_irc'
 __author__ = 'The_CJ'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2018-2020 The_CJ'
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 from .Classes.channel import Channel
 from .Classes.client import Client
 from .Classes.message import Message
 from .Classes.user import User
+
+class Errors(object):
+	from .Utils.errors import InvalidAuth, InvalidCredentials, PingTimeout, EmptyPayload
