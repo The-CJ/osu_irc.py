@@ -1,9 +1,12 @@
-from typing import Dict, NewType, Set, List
+from typing import Dict, NewType, Set, List, TYPE_CHECKING
 UserName = NewType("UserName", str)
+if TYPE_CHECKING:
+	from .client import Client as OsuClient
 
 from .user import User
 from .stores import UserStore
 from .undefined import UNDEFINED
+from ..Utils.commands import sendMessage
 
 class Channel(object):
 	"""
@@ -140,6 +143,19 @@ class Channel(object):
 			voiced.append(U)
 
 		return voiced
+
+	# funcs
+	async def sendMessage(self, cls:"OsuClient", content:str) -> None:
+		"""
+		Send a message to the channel,
+		requires you to give this function the Client class, don't ask why...
+
+		this is basicly an alternative to:
+		cls.sendMessage(Channel.name, content)
+
+		makes you think... is this even faster? i dunno, adding it anyways LULW
+		"""
+		return await sendMessage(cls, self.name, content)
 
 	# props
 	@property
