@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .user import User as OsuUser
-    from .channel import Channel as OsuChannel
+	from .client import Client as OsuClient
+	from .user import User as OsuUser
+	from .channel import Channel as OsuChannel
 
 import re
 from .undefined import UNDEFINED
@@ -108,13 +109,22 @@ class Message(object):
 			self.is_action = True
 			self._content = search.group(1)
 
-	def reply(self, ctx, reply:str = 'No Response'):
+	async def reply(self, cls:"OsuClient", reply:str) -> None:
 		"""
-		Reply function,
-		it needs ctx to work, reply is needed too but just incase it send 'No Response' if it doesnt get reply param
+		Fast reply with content to a message,
+		requires you to give this function the Client class, don't ask why...
+		and a valid content you want to send.
 		"""
-		if self._channel_type == 1: return sendMessage(ctx, self._room_name, reply)
-		if self._channel_type == 2: return sendPM(ctx, self._user_name, reply)
+
+		if not reply:
+			raise AttributeError("Can' send empty content")
+
+		if self._channel_type == 1:
+			return await sendMessage(cls, self._room_name, reply)
+		elif self._channel_type == 2:
+			return await sendPM(cls, self._user_name, reply)
+		else:
+			raise AttributeError("Can't reply to unknown channel type")
 
 	# props
 	@property
