@@ -29,8 +29,8 @@ class MyBot(osu_irc.Client):
     # do more with your code
 
 
-x = MyBot()
-x.run(token="1234567890", nickname="cool_username")
+x = MyBot(token="1234567890", nickname="cool_username")
+x.run()
 ```
 Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc
 :copyright: 2018-2020 The_CJ
