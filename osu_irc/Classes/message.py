@@ -116,9 +116,6 @@ class Message(object):
 		and a valid content you want to send.
 		"""
 
-		if not reply:
-			raise AttributeError("Can' send empty content")
-
 		if self._channel_type == 1:
 			return await sendMessage(cls, self._room_name, reply)
 		elif self._channel_type == 2:
