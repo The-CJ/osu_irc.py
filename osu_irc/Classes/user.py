@@ -5,7 +5,6 @@ if TYPE_CHECKING:
 
 import re
 from .undefined import UNDEFINED
-from ..Utils.commands import sendPM
 from ..Utils.regex import ReUserName, ReRoomName
 
 class User(object):
@@ -104,7 +103,7 @@ class User(object):
 
 		makes you think... is this even faster? i dunno, adding it anyways LULW
 		"""
-		return await sendPM(cls, self.name, content)
+		return await cls.sendPM(self.name, content)
 
 	# props
 	@property

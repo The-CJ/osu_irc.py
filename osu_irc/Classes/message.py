@@ -13,8 +13,6 @@ from ..Utils.regex import (
 	ReAction
 )
 
-from ..Utils.commands import sendMessage, sendPM
-
 class Message(object):
 	"""
 	This class represents a message.
@@ -117,9 +115,9 @@ class Message(object):
 		"""
 
 		if self._channel_type == 1:
-			return await sendMessage(cls, self._room_name, reply)
+			return await cls.sendMessage(self.room_name, reply)
 		elif self._channel_type == 2:
-			return await sendPM(cls, self._user_name, reply)
+			return await cls.sendPM(self.user_name, reply)
 		else:
 			raise AttributeError("Can't reply to unknown channel type")
 
