@@ -16,6 +16,9 @@ async def sendMessage(cls:"Client", Chan:Channel or str, content:str):
 	All IRC Channel-names start with a '#' you don't have to provide this, we will handle everything. ("#osu" == "osu")
 	For sending messages to a User (PM) use sendPM()
 	"""
+	if not content:
+		raise AttributeError("Can't send empty content")
+
 	if isinstance(Chan, Channel):
 		destination:str = Chan.name
 	elif isinstance(Chan, User):
@@ -34,6 +37,9 @@ async def sendPM(cls:"Client", Us:User or str, content:str):
 
 	For sending messages to a channel use sendMessage()
 	"""
+	if not content:
+		raise AttributeError("Can't send empty content")
+
 	if isinstance(Us, User):
 		destination:str = Us.name
 	elif isinstance(Us, Channel):
