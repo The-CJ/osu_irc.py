@@ -21,50 +21,69 @@ class Client():
 	"""
 	Main class for everything.
 	Init and call .run()
-	"""
-	def __init__(self, token:str=None, nickname:str=None, reconnect:bool=True, request_limit:int=15):
 
-		self.Loop:asyncio.AbstractEventLoop = None
+	Optional Keyword Arguments
+	--------------------------
+	* Loop `asyncio.AbstractEventLoop` : Default: asyncio.get_event_loop()
+	  * Main event loop, used for everything
+	* reconnect `bool` : Default: True
+	  * Should the client automatically try to reconnect
+	* nickname `str` : Default: None
+	  * User nickname, only lowercase
+	* token `str` : Default: None
+	  * User oauth token
+	* request_limit `int` : Default: 15
+	  * How many requests can be send before the client goes into rate limit protection (request_limit per 60 sec)
+	"""
+	def __init__(self, Loop:asyncio.AbstractEventLoop=None, **kwargs:dict):
+
+		# setable vars
+		self.Loop:asyncio.AbstractEventLoop = asyncio.get_event_loop() if Loop is None else Loop
+		self.reconnect:bool = kwargs.get("reconnect", True)
+		self.nickname:str = kwargs.get("nickname", None)
+		self.token:str = kwargs.get("token", None)
+		self.request_limit:int = kwargs.get("request_limit", 15)
+
+		# static* vars
+		self.host:str = "irc.ppy.sh"
+		self.port:int = 6667
+
+		# runtime vars
 		self.running:bool = False
 		self.auth_success:bool = False
 		self.query_running:bool = False
-		self.reconnect:bool = reconnect
-
-		self.token:str = token
-		self.nickname:str = nickname
-		self.host:str = "irc.ppy.sh"
-		self.port:int = 6667
 		self.last_ping:int = time.time()
+		self.traffic:int = 0
+		self.stored_traffic:List[str or bytes] = []
 
+		# Connection objects
 		self.ConnectionReader:asyncio.StreamReader = None
 		self.ConnectionWriter:asyncio.StreamWriter = None
 
 		self.channels:Dict[ChannelName, Channel] = ChannelStore()
 		self.users:Dict[UserName, User] = UserStore()
 
-		self.request_limit:int = request_limit
-		self.traffic:int = 0
-		self.stored_traffic:List[str or bytes] = []
-
 	def stop(self, *x, **xx) -> None:
 		"""
 		gracefully shuts down the bot, .start and .run will be no longer blocking
 		"""
 		Log.debug(f"Client.stop() has been called, shutting down")
-		self.auth_success = False
 		self.running = False
-		self.query_running = False
 		self.ConnectionWriter.close()
 		self.Loop.stop()
 
-	def run(self, **kwargs:dict) -> None:
+	def run(self) -> None:
 		"""
-		start the bot, this function will wrap self.start() into a asyncio loop.
-		- This function is blocking, it only returns after stop is called
+		Blocking call that starts the bot, it will wrap .start() into a coroutine for you.
+
+		### This function is blocking, it only returns after .stop() is called
 		"""
+
+		if self.running:
+			raise RuntimeError("already running")
+
 		Log.debug(f"Client.run() has been called, creating loop and wrapping future")
-		self.Loop = asyncio.new_event_loop()
-		MainFuture:asyncio.Future = asyncio.ensure_future( self.start(**kwargs), loop=self.Loop )
+		MainFuture:asyncio.Future = asyncio.ensure_future( self.start(), loop=self.Loop )
 		MainFuture.add_done_callback( self.stop )
 		try:
 			Log.debug(f"Client.run() starting Client.start() future")
@@ -96,22 +115,24 @@ class Client():
 			Log.debug(f"All task discarded, closing loop")
 			self.Loop.close()
 
-	async def start(self, **kwargs:dict) -> None:
+	async def start(self) -> None:
 		"""
-		nearly the same as self.run()
-		except its not going to create a loop.
-		- This function is blocking, it only returns after stop is called
+		Blocking call that starts the bot, this function is a coroutine.
+
+		### This function is blocking, it only returns after .stop() is called
+
+		## Warning!
+		This function should be ideally handled via .run()
+		because else, there will be no cleanup of futures and task on .stop()
+		Which actully is totally ok, but its messy and not really intended.
+		If you don't add loop cleanup yourself,
+		your console will be flooded by `addTraffic` coros waiting to be completed.
 		"""
 		if self.running:
 			raise RuntimeError("already running")
 
 		self.running = True
 		self.query_running = True
-
-		if not self.token:
-			self.token = kwargs.get('token', None)
-		if not self.nickname:
-			self.nickname = kwargs.get('nickname', None)
 
 		if self.token == None or self.nickname == None:
 			raise AttributeError("'token' and 'nickname' must be provided")
