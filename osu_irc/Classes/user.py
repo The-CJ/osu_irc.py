@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING, Set, List
 if TYPE_CHECKING:
-	from .client import Client
-	from .channel import Channel
+	from .client import Client as OsuClient
+	from .channel import Channel as OsuChannel
 
 import re
 from .undefined import UNDEFINED
+from ..Utils.commands import sendPM
 from ..Utils.regex import ReUserName, ReRoomName
 
 class User(object):
@@ -71,8 +72,8 @@ class User(object):
 		if search != None:
 			self._generated_via_channel = search.group(1)
 
-	# func
-	def foundInChannels(self, cls:"Client") -> List["Channel"]:
+	# funcs
+	def foundInChannels(self, cls:"OsuClient") -> List["OsuChannel"]:
 		"""
 		Returns a list of channels this user is currently in,
 		requires you to give this function the Client class, don't ask why...
@@ -84,14 +85,26 @@ class User(object):
 		```
 		"""
 
-		ret:List["Channel"] = []
+		ret:List["OsuChannel"] = []
 
 		for channel_name in self.found_in:
 
-			Ch:"Channel" = cls.channels.get(channel_name, None)
+			Ch:"OsuChannel" = cls.channels.get(channel_name, None)
 			if Ch: ret.append(Ch)
 
 		return ret
+
+	async def sendMessage(self, cls:"OsuClient", content:str) -> None:
+		"""
+		Send a message to the channel,
+		requires you to give this function the Client class, don't ask why...
+
+		this is basicly an alternative to:
+		cls.sendPM(User.name, content)
+
+		makes you think... is this even faster? i dunno, adding it anyways LULW
+		"""
+		return await sendPM(cls, self.name, content)
 
 	# props
 	@property
