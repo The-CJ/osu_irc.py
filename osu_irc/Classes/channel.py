@@ -1,11 +1,11 @@
-from typing import Dict, NewType, Set, List, TYPE_CHECKING
-UserName = NewType("UserName", str)
+from typing import Dict, NewType, Set, List, TYPE_CHECKING, Union, Optional
 if TYPE_CHECKING:
 	from .client import Client as OsuClient
 
 from .user import User
 from .stores import UserStore
-from .undefined import UNDEFINED
+
+UserName = NewType("UserName", str)
 
 class Channel(object):
 	"""
@@ -20,18 +20,18 @@ class Channel(object):
 	def __str__(self):
 		return self.name or ""
 
-	def __init__(self, *x, **xx):
+	def __init__(self, *_, **__):
 
 		# props
-		self._name:str = UNDEFINED
-		self._chatters:Dict[UserName, User] = UserStore()
+		self._name:Optional[str] = None
+		self._chatters:Dict[Union[UserName, str], User] = UserStore()
 
 		# other
 		self.motd:str = ""
 
 		# because of user stores, we save the name of the different user types in a channel
-		# Update: sooo... em, yeah, in osu there are no IRC- Owner (~), Operator (&) or Helper (%)
-		# the Owner whould be BanchBot, i guess, but technicly these 3 could be taken out, but i don't give a fuck. REEEEEE
+		# Update: so... em, yeah, in osu there are no IRC- Owner (~), Operator (&) or Helper (%)
+		# the Owner would be BanchBot, i guess, but technically these 3 could be taken out, but i don't give a fuck. REEEEEE
 		self._owner:Set[str] = set() # ~
 		self._admin:Set[str] = set() # @
 		self._operator:Set[str] = set() # &
@@ -39,10 +39,10 @@ class Channel(object):
 		self._voiced:Set[str] = set() # +
 
 		# other than twitch, this class doesn't has a build function,
-		# because it should only be created by a handler (probl. mostly handleJoin)
+		# because it should only be created by a handler (probably. mostly handleJoin)
 
 	def compact(self) -> dict:
-		d:dict = {}
+		d:dict = dict()
 		d["name"] = self.name
 		d["motd"] = self.motd
 		d["chatters"] = self.chatters
@@ -72,7 +72,7 @@ class Channel(object):
 	def getOwners(self) -> List[User]:
 		"""
 		get all users that are owner (~) of the current channel.
-		(NOTE: i never find any in thie result... but maybe there are owner... i mean BanchoBot Should be one, right?)
+		(NOTE: i never find any in the result... but maybe there are owner... i mean BanchoBot Should be one, right?)
 		"""
 
 		owners:List[User] = []
@@ -158,10 +158,11 @@ class Channel(object):
 
 	# props
 	@property
-	def chatters(self) -> Dict[UserName, User]:
+	def chatters(self) -> Dict[Union[UserName, str], User]:
 		return self._chatters
+
 	@property
-	def users(self) -> Dict[UserName, User]:
+	def users(self) -> Dict[Union[UserName, str], User]:
 		return self.chatters
 
 	@property

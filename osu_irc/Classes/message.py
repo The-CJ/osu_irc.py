@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from .client import Client as OsuClient
 	from .user import User as OsuUser
 	from .channel import Channel as OsuChannel
 
 import re
-from .undefined import UNDEFINED
 from ..Utils.regex import (
 	ReUserName,
 	ReRoomName,
@@ -28,26 +27,26 @@ class Message(object):
 	```
 	"""
 	def __repr__(self):
-		return f"<{self.__class__.__name__} channel='{self.channel_name}' user='{self.user_name}'>"
+		return f"<{self.__class__.__name__} channel='{self.room_name}' user='{self.user_name}'>"
 
 	def __str__(self):
 		return self.content
 
-	def __init__(self, raw:str or None):
+	def __init__(self, raw:Optional[str]):
 		# props
-		self._user_name:str = UNDEFINED
-		self._room_name:str = UNDEFINED
-		self._content:str = UNDEFINED
+		self._user_name:Optional[str] = None
+		self._room_name:Optional[str] = None
+		self._content:Optional[str] = None
 
 		# classes
-		self.Author:"OsuUser" = None
-		self.Channel:"OsuChannel" = None
+		self.Author:Optional["OsuUser"] = None
+		self.Channel:["OsuChannel"] = None
 
 		# other
 		self.is_action:bool = False
 		self._channel_type:int = 0
 
-		if raw != None:
+		if raw:
 			try:
 				self.messageBuild(raw)
 
@@ -56,7 +55,7 @@ class Message(object):
 
 	# utils
 	def compact(self) -> dict:
-		d:dict = {}
+		d:dict = dict()
 		d["user_name"] = self.user_name
 		d["room_name"] = self.room_name
 		d["content"] = self.content
@@ -70,17 +69,17 @@ class Message(object):
 
 		# _user_name
 		search = re.search(ReUserName, raw)
-		if search != None:
+		if search:
 			self._user_name = search.group(1)
 
 		# _room_name
 		search = re.search(ReRoomName, raw)
-		if search != None:
+		if search:
 			self._room_name = search.group(1)
 
 		# _content
 		search = re.search(ReContent, raw)
-		if search != None:
+		if search:
 			self._content = search.group(1)
 
 		self.checkType()
@@ -103,7 +102,7 @@ class Message(object):
 		action means its a /me message. If it is, change content and set is_action true
 		"""
 		search:re.Match = re.search(ReAction, self.content)
-		if search != None:
+		if search:
 			self.is_action = True
 			self._content = search.group(1)
 
