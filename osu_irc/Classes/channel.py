@@ -149,7 +149,7 @@ class Channel(object):
 		Send a message to the channel,
 		requires you to give this function the Client class, don't ask why...
 
-		this is basicly an alternative to:
+		this is basically an alternative to:
 		cls.sendMessage(Channel.name, content)
 
 		makes you think... is this even faster? i dunno, adding it anyways LULW
