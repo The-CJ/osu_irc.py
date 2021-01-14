@@ -8,7 +8,7 @@ osu! IRC wrapper
 Simple to use IRC connection for osu optimized for the PhaazeOS project
 but usable to any purpose
 
-:copyright: (c) 2018-2020 The_CJ
+:copyright: (c) 2018-2021 The_CJ
 :license: MIT License
 
 - Inspired by the code of Rapptz's Discord library
