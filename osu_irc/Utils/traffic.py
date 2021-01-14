@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..Classes.client import Client
+	from ..Classes.client import Client
 
 import asyncio
 
@@ -15,13 +15,13 @@ async def addTraffic(cls:"Client"):
 
 async def trafficQuery(cls:"Client"):
 	"""
-	get started on Cient.start(),
-	a coro thats takes all requests that would be over the limit
+	get started on Client.start(),
+	a coro that's takes all requests that would be over the limit
 	and send them later
 	"""
 	while cls.running and cls.query_running:
 		if cls.traffic <= (cls.request_limit-1) and len(cls.stored_traffic) > 0:
 			req = cls.stored_traffic.pop(0)
-			await cls.sendContent( req )
+			await cls.sendContent(req)
 		else:
 			await asyncio.sleep(0.05)

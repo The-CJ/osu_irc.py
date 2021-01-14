@@ -1,9 +1,5 @@
-from typing import List, Dict, NewType
-ChannelName = NewType("ChannelName", str)
-UserName = NewType("UserName", str)
-
+from typing import List, Dict, NewType, Optional, Union
 import logging
-Log:logging.Logger = logging.getLogger("osu_irc")
 
 import time
 import asyncio
@@ -17,27 +13,27 @@ from ..Utils.errors import InvalidAuth, PingTimeout, EmptyPayload, InvalidCreden
 from ..Utils.traffic import addTraffic, trafficQuery
 from ..Utils.detector import mainEventDetector, garbageDetector
 
-class Client():
+Log:logging.Logger = logging.getLogger("osu_irc")
+ChannelName = NewType("ChannelName", str)
+UserName = NewType("UserName", str)
+
+
+class Client(object):
 	"""
 	Main class for everything.
 	Init and call .run()
 
 	Optional Keyword Arguments
 	--------------------------
-	* Loop `asyncio.AbstractEventLoop` : Default: asyncio.get_event_loop()
-	  * Main event loop, used for everything
-	* reconnect `bool` : Default: True
-	  * Should the client automatically try to reconnect
-	* nickname `str` : Default: None
-	  * User nickname, only lowercase
-	* token `str` : Default: None
-	  * User oauth token
-	* request_limit `int` : Default: 15
-	  * How many requests can be send before the client goes into rate limit protection (request_limit per 60 sec)
+	* `Loop` - asyncio.AbstractEventLoop  : (Default: asyncio.get_event_loop()) [Main event loop, used for everything]
+	* `reconnect` - bool : (Default: True) [Should the client automatically try to reconnect]
+	* `nickname` - str` : (Default: None) [User nickname, only lowercase]
+	* `token` str : (Default: None) [User oauth token]
+	* `request_limit` int : (Default: 15)[ How many requests can be send before the client goes into rate limit protection (request_limit per 60 sec)]
 	"""
-	def __init__(self, Loop:asyncio.AbstractEventLoop=None, **kwargs:dict):
+	def __init__(self, Loop:Optional[asyncio.AbstractEventLoop]=None, **kwargs):
 
-		# setable vars
+		# vars
 		self.Loop:asyncio.AbstractEventLoop = asyncio.get_event_loop() if Loop is None else Loop
 		self.reconnect:bool = kwargs.get("reconnect", True)
 		self.nickname:str = kwargs.get("nickname", None)
@@ -52,18 +48,18 @@ class Client():
 		self.running:bool = False
 		self.auth_success:bool = False
 		self.query_running:bool = False
-		self.last_ping:int = time.time()
+		self.last_ping:float = time.time()
 		self.traffic:int = 0
-		self.stored_traffic:List[str or bytes] = []
+		self.stored_traffic:List[str, bytes] = []
 
 		# Connection objects
-		self.ConnectionReader:asyncio.StreamReader = None
-		self.ConnectionWriter:asyncio.StreamWriter = None
+		self.ConnectionReader:Optional[asyncio.StreamReader] = None
+		self.ConnectionWriter:Optional[asyncio.StreamWriter] = None
 
-		self.channels:Dict[ChannelName, Channel] = ChannelStore()
-		self.users:Dict[UserName, User] = UserStore()
+		self.channels:Dict[Union[ChannelName, str], Channel] = ChannelStore()
+		self.users:Dict[Union[UserName, str], User] = UserStore()
 
-	def stop(self, *x, **xx) -> None:
+	def stop(self, *_, **__) -> None:
 		"""
 		gracefully shuts down the bot, .start and .run will be no longer blocking
 		"""
@@ -83,8 +79,8 @@ class Client():
 			raise RuntimeError("already running")
 
 		Log.debug(f"Client.run() has been called, creating loop and wrapping future")
-		MainFuture:asyncio.Future = asyncio.ensure_future( self.start(), loop=self.Loop )
-		MainFuture.add_done_callback( self.stop )
+		MainFuture:asyncio.Future = asyncio.ensure_future(self.start(), loop=self.Loop)
+		MainFuture.add_done_callback(self.stop)
 		try:
 			Log.debug(f"Client.run() starting Client.start() future")
 			self.Loop.run_forever()
@@ -95,7 +91,7 @@ class Client():
 
 			# Client.stop should be called once, if you break out via exceptions,
 			# since Client.stop also called the Loop to stop, we do some cleanup now
-			MainFuture.remove_done_callback( self.stop )
+			MainFuture.remove_done_callback(self.stop)
 			Log.debug(f"Removing MainFuture callback")
 
 			# gather all task of the loop (that will mostly be stuff like: addTraffic())
@@ -109,7 +105,7 @@ class Client():
 
 			# and now start the loop again, which will result that all tasks are instantly finished and done
 			Log.debug(f"Restarting loop to discard tasks")
-			self.Loop.run_until_complete( asyncio.gather(*tasks, return_exceptions=True) )
+			self.Loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
 			# then close it... and i dunno, get a coffee or so
 			Log.debug(f"All task discarded, closing loop")
@@ -124,9 +120,9 @@ class Client():
 		## Warning!
 		This function should be ideally handled via .run()
 		because else, there will be no cleanup of futures and task on .stop()
-		Which actully is totally ok, but its messy and not really intended.
+		Which actually is totally ok, but its messy and not really intended.
 		If you don't add loop cleanup yourself,
-		your console will be flooded by `addTraffic` coros waiting to be completed.
+		your console will be flooded by `addTraffic` coroutines waiting to be completed.
 		"""
 		if self.running:
 			raise RuntimeError("already running")
@@ -134,7 +130,7 @@ class Client():
 		self.running = True
 		self.query_running = True
 
-		if self.token == None or self.nickname == None:
+		if self.token is None or self.nickname is None:
 			raise AttributeError("'token' and 'nickname' must be provided")
 
 		Log.debug(f"Client.start() all required fields found, awaiting Client.main()")
@@ -142,14 +138,14 @@ class Client():
 
 	async def main(self) -> None:
 		"""
-		a loop that creates the connections and processess all events
+		a loop that creates the connections and processes all events
 		if self.reconnect is active, it handles critical errors with a restart of the bot
 		will run forever until self.stop() is called
 		or a critical error without reconnect
 		"""
 		while self.running:
 
-			#reset bot storage
+			# reset bot storage
 			self.last_ping = time.time()
 			self.traffic = 0
 			self.channels = ChannelStore()
@@ -160,21 +156,21 @@ class Client():
 				self.ConnectionWriter.close()
 
 			# not resetting self.stored_traffic, maybe there is something inside
-			Log.debug("Client resetted main attributes")
+			Log.debug("Client resettled main attributes")
 
 			try:
-				#init connection
+				# init connection
 				self.ConnectionReader, self.ConnectionWriter = await asyncio.open_connection(host=self.host, port=self.port)
-				Log.debug("Client successfull create connection Reader/Writer pair")
+				Log.debug("Client successful create connection Reader/Writer pair")
 
-				#login
+				# login
 				await sendPass(self)
 				await sendNick(self)
 
-				#start listen
-				asyncio.ensure_future( trafficQuery(self) )
-				Log.debug("Client sended base data, continue to listen for response...")
-				await self.listen() # <- that processess stuff
+				# start listen
+				asyncio.ensure_future(trafficQuery(self))
+				Log.debug("Client sent base data, continue to listen for response...")
+				await self.listen() # <- that processes stuff
 
 			except InvalidAuth:
 				Log.error("Invalid Auth for osu!, please check `token` and `nickname`, not trying to reconnect")
@@ -196,7 +192,7 @@ class Client():
 				await self.onError(E)
 				continue
 
-			except KeyboardInterrupt :
+			except KeyboardInterrupt:
 				self.stop()
 				continue
 
@@ -209,16 +205,16 @@ class Client():
 
 	async def listen(self):
 
-		#listen to osu
+		# listen to osu
 		while self.running:
 
 			Log.debug("Client awaiting response...")
 			payload:bytes = await self.ConnectionReader.readline()
 			Log.debug(f"Client received {len(payload)} bytes of data.")
-			asyncio.ensure_future( self.onRaw(payload) )
+			asyncio.ensure_future(self.onRaw(payload))
 			payload:str = payload.decode('UTF-8').strip('\n').strip('\r')
 
-			#just to be sure
+			# just to be sure
 			if payload in ["", " ", None] or not payload:
 				if self.auth_success:
 					raise EmptyPayload()
@@ -232,45 +228,123 @@ class Client():
 			# check if the content is known garbage
 			garbage:bool = await garbageDetector(self, payload)
 			if garbage:
-				Log.debug("Client got garbare response, launching: Client.onGarbage")
-				asyncio.ensure_future( self.onGarbage(payload) )
+				Log.debug("Client got garbage response, launching: Client.onGarbage")
+				asyncio.ensure_future(self.onGarbage(payload))
 				continue
 
 			# check if there is something usefully we know
 			processed:bool = await mainEventDetector(self, payload)
 			if not processed:
 				Log.debug("Client got unknown response, launching: Client.onUnknown")
-				asyncio.ensure_future( self.onUnknown(payload) )
+				asyncio.ensure_future(self.onUnknown(payload))
 				continue
 
 	async def sendContent(self, content:bytes or str, ignore_limit:bool=False) -> None:
 		"""
 		used to send content of any type to osu
-		pretty much all content should be sended via a other function like, sendMessage, sendPM or whatever
+		pretty much all content should be sent via a other function like, sendMessage, sendPM or whatever
 		else that chance that the server understands what you want is near 0
 		"""
 		if type(content) != bytes:
 			content = bytes(content, 'UTF-8')
 
 		if (self.traffic <= self.request_limit) or ignore_limit:
-			asyncio.ensure_future( addTraffic(self) )
-			asyncio.ensure_future( self.onSend(content) )
+			asyncio.ensure_future(addTraffic(self))
+			asyncio.ensure_future(self.onSend(content))
 			Log.debug(f"Client sending {len(content)} bytes of content to the ConnectionWriter")
-			self.ConnectionWriter.write( content )
+			self.ConnectionWriter.write(content)
 
 		else:
-			asyncio.ensure_future( self.onLimit(content) )
-			self.stored_traffic.append( content )
+			asyncio.ensure_future(self.onLimit(content))
+			self.stored_traffic.append(content)
 
 	# commands
-	from ..Utils.commands import sendMessage, sendPM, joinChannel, partChannel
+	async def sendMessage(self, Chan:Union[Channel, str], content: str):
+		"""
+		This will send the content/message to a channel. (If you are not timed out, banned or otherwise, that not my fault duh)
+		1st arg, `Chan` is the destination, provide a `Channel` object or a string like "osu", where you want to send your 2nd arg `content`.
 
-	#events
-	async def onError(self, Ex:Exception) -> None:
+		All IRC Channel-names start with a '#' you don't have to provide this, we will handle everything. ("#osu" == "osu")
+		For sending messages to a User (PM) use sendPM()
+		"""
+		if not content:
+			raise AttributeError("Can't send empty content")
+
+		if isinstance(Chan, Channel):
+			destination: str = Chan.name
+		elif isinstance(Chan, User):
+			raise ValueError(f"sendMessage() is meant for channels only, please use sendPM() for messages to a user")
+		else:
+			destination: str = str(Chan)
+
+		destination = destination.lower().strip('#').strip(' ')
+		Log.debug(f"Sending: PRIVMSG #{destination} - {content[:50]}")
+		await self.sendContent(f"PRIVMSG #{destination} :{content}\r\n")
+
+	async def sendPM(self, Us:Union[User, str], content: str):
+		"""
+		This will send the content/message to a user. (If you are not blocked or otherwise)
+		1st arg, `Us` is the destination, provide a `User` object or a string like "The_CJ", where you want to send your 2nd arg `content`.
+
+		For sending messages to a channel use sendMessage()
+		"""
+		if not content:
+			raise AttributeError("Can't send empty content")
+
+		if isinstance(Us, User):
+			destination: str = Us.name
+		elif isinstance(Us, Channel):
+			raise ValueError(f"sendPM() is meant for users only, please use sendMessage() for messages to a channel")
+		else:
+			destination: str = str(Us)
+
+		destination = destination.lower().strip('#').strip(' ')
+		Log.debug(f"Sending: PRIVMSG {destination} - {content[:50]}")
+		await self.sendContent(f"PRIVMSG {destination} :{content}\r\n")
+
+	async def joinChannel(self, Chan:Union[Channel, str]):
+		"""
+		Joining a channel allows the client to receive messages from this channel.
+		`Chan` is the destination, provide a `Channel` object or a string like "osu" or "#lobby"
+
+		All IRC Channel-names start with a '#' you don't have to provide this, we will handle everything. ("#osu" == "osu")
+		"""
+		if isinstance(Chan, Channel):
+			destination: str = Chan.name
+		elif isinstance(Chan, User):
+			raise ValueError(f"you can not join a user, just start PM-ing, duh")
+		else:
+			destination: str = str(Chan)
+
+		destination = destination.lower().strip('#')
+		Log.debug(f"Sending: JOIN #{destination}")
+		await self.sendContent(f"JOIN #{destination}\r\n")
+
+	async def partChannel(self, Chan:Union[Channel, str]):
+		"""
+		Parting a channel disables receiving messages from this channel.
+		`Chan` may is a `Channel` object or a string like "osu" or "#lobby"
+
+		All IRC Channel-names start with a '#' you don't have to provide this, we will handle everything. ("#osu" == "osu")
+		"""
+		if isinstance(Chan, Channel):
+			destination: str = Chan.name
+		elif isinstance(Chan, User):
+			raise ValueError(f"you can not part a user, its not a channel, duh")
+		else:
+			destination: str = str(Chan)
+
+		destination = destination.lower().strip('#')
+		Log.debug(f"Sending: PART #{destination}")
+		await self.sendContent(f"PART #{destination}\r\n")
+
+	# events
+	# noinspection PyMethodMayBeStatic
+	async def onError(self, Ex:BaseException) -> None:
 		"""
 		called every time something goes wrong
 		"""
-		print(Ex)
+		Log.error(Ex)
 		traceback.print_exc()
 
 	async def onLimit(self, payload:bytes) -> None:

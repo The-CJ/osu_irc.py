@@ -7,7 +7,7 @@ but usable to any purpose
 
 ## Install
 
-There are many ways. here my "prefered" one:
+There are many ways. here my "preferred" one:
 ```
 py -m pip install git+https://github.com/The-CJ/osu_irc.py.git#egg=osu_irc
 ```
@@ -20,7 +20,7 @@ import osu_irc
 class MyBot(osu_irc.Client):
 
   async def onReady(self):
-    self.joinChannel("#osu")
+    await self.joinChannel("#osu")
     #do something
 
   async def onMessage(self, message):
@@ -33,4 +33,4 @@ x = MyBot(token="1234567890", nickname="cool_username")
 x.run()
 ```
 Get nickname and server password(token) from here: https://osu.ppy.sh/p/irc
-:copyright: 2018-2020 The_CJ
+:copyright: 2018-2021 The_CJ

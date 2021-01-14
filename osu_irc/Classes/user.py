@@ -1,20 +1,19 @@
-from typing import TYPE_CHECKING, Set, List
+from typing import TYPE_CHECKING, Set, List, Optional
 if TYPE_CHECKING:
 	from .client import Client as OsuClient
 	from .channel import Channel as OsuChannel
 
 import re
-from .undefined import UNDEFINED
 from ..Utils.regex import ReUserName, ReRoomName
 
 class User(object):
 	"""
 	This class represents a osu user,
-	the same user object meight be found in multiple Channel.chatters dict's.
+	the same user object might be found in multiple Channel.chatters dict's.
 
 	NOTE: all users from all channels can be found ion Client.users
 	NOTE 2: also there are no ID's because why should it, REEEEEEE (i really like ID's... :c)
-	NOTE 3*: sooo names with a space (' ') are replaced with a ('_') in IRC, yeah... keep that in mind, nothing i can do
+	NOTE 3*: so names with a space (' ') are replaced with a ('_') in IRC, yeah... keep that in mind, nothing i can do
 
 	```
 	* Note 3:
@@ -33,12 +32,12 @@ class User(object):
 		return self.name or ""
 
 	def __init__(self, raw:str or None):
-		self._name:str = UNDEFINED
-		self._generated_via_channel:str = UNDEFINED
+		self._name:Optional[str] = None
+		self._generated_via_channel:Optional[str] = None
 
 		self.found_in:Set[str] = set()
 
-		if raw != None:
+		if raw:
 			try:
 				self.userBuild(raw)
 
@@ -46,7 +45,7 @@ class User(object):
 				raise AttributeError(raw)
 
 	def compact(self) -> dict:
-		d:dict = {}
+		d:dict = dict()
 		d["name"] = self.name
 		d["found_in"] = self.found_in
 		return d
@@ -63,12 +62,12 @@ class User(object):
 
 		# _name
 		search = re.search(ReUserName, raw)
-		if search != None:
+		if search:
 			self._name = search.group(1)
 
 		# _generated_via_channel
 		search = re.search(ReRoomName, raw)
-		if search != None:
+		if search:
 			self._generated_via_channel = search.group(1)
 
 	# funcs

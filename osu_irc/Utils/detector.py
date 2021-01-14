@@ -19,68 +19,68 @@ from ..Utils.regex import (
 	ReMOTD, ReMode
 )
 
-async def garbageDetector(cls:"Client", payload:str) -> bool:
+async def garbageDetector(_cls:"Client", payload:str) -> bool:
 	"""
-	This detector is suppost to catch all known patterns that are also known as trash.
+	This detector is suppose to catch all known patterns that are also known as trash.
 	Like this the very beginning where bancho boat is drawn in ASCII
 	"""
-	if re.match(ReGarbage, payload) != None:
+	if re.match(ReGarbage, payload) is not None:
 		return True
 
 	return False
 
 async def mainEventDetector(cls:"Client", payload:str) -> bool:
 	"""
-	This detector is suppost to catch all events we can somehow process, if not, give back False.
+	This detector is suppose to catch all events we can somehow process, if not, give back False.
 	If that happens the Client `cls` makes additional handling
 	"""
 
-	#response to PING
-	if re.match(RePing, payload) != None:
+	# response to PING
+	if re.match(RePing, payload) is not None:
 		cls.last_ping = time.time()
 		await sendPong(cls)
 		return True
 
-	# handels events: onJoin
-	if re.match(ReJoin, payload) != None:
+	# handles events: onJoin
+	if re.match(ReJoin, payload) is not None:
 		return await handleJoin(cls, payload)
 
-	# handels events: onPart
-	if re.match(RePart, payload) != None:
+	# handles events: onPart
+	if re.match(RePart, payload) is not None:
 		return await handlePart(cls, payload)
 
-	# handels events: onQuit
-	if re.match(ReQuit, payload) != None:
+	# handles events: onQuit
+	if re.match(ReQuit, payload) is not None:
 		return await handleQuit(cls, payload)
 
-	# handels events: onMessage
-	if re.match(RePrivMessage, payload) != None:
+	# handles events: onMessage
+	if re.match(RePrivMessage, payload) is not None:
 		return await handlePrivMessage(cls, payload)
 
-	# handels events: None
-	if re.match(ReUserList, payload) != None:
+	# handles events: None
+	if re.match(ReUserList, payload) is not None:
 		return await handleUserList(cls, payload)
 
-	# handels events: None
-	if re.match(ReMOTD, payload) != None:
+	# handles events: None
+	if re.match(ReMOTD, payload) is not None:
 		return await handleMOTDEvent(cls, payload)
 
-	# handels events: None
-	if re.match(ReMode, payload) != None:
+	# handles events: None
+	if re.match(ReMode, payload) is not None:
 		return await handleMode(cls, payload)
 
-	# handels events: onReady, onReconnect
-	if re.match(ReOnReady, payload) != None:
+	# handles events: onReady, onReconnect
+	if re.match(ReOnReady, payload) is not None:
 		if cls.auth_success:
-			#means we got a reconnect
-			asyncio.ensure_future( cls.onReconnect() )
+			# means we got a reconnect
+			asyncio.ensure_future(cls.onReconnect())
 		cls.auth_success = True
-		asyncio.ensure_future( cls.onReady() )
+		asyncio.ensure_future(cls.onReady())
 		return True
 
 	# wrong_auth
 	if not cls.auth_success:
-		if re.match(ReWrongAuth, payload) != None:
-			raise InvalidAuth( payload )
+		if re.match(ReWrongAuth, payload) is not None:
+			raise InvalidAuth(payload)
 
 	return False

@@ -1,10 +1,8 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..Classes.client import Client
+	from ..Classes.client import Client
 
 import logging
-Log:logging.Logger = logging.getLogger("osu_irc")
-
 import re
 import asyncio
 from ..Classes.message import Message
@@ -14,6 +12,7 @@ from ..Utils.regex import (
 	ReUserListData, ReQuit, ReMOTDInfo,
 	ReModeInfo
 )
+Log:logging.Logger = logging.getLogger("osu_irc")
 
 async def handleJoin(cls:"Client", payload:str) -> bool:
 	"""
@@ -55,7 +54,7 @@ async def handleJoin(cls:"Client", payload:str) -> bool:
 	KnownUser.found_in.add(Chan.name)
 
 	Log.debug(f"Client launching: Client.onMemberJoin: {str(vars(Chan))} {str(vars(KnownUser))}")
-	asyncio.ensure_future( cls.onMemberJoin(Chan, KnownUser) )
+	asyncio.ensure_future(cls.onMemberJoin(Chan, KnownUser))
 	return True
 
 async def handlePart(cls:"Client", payload:str) -> bool:
@@ -103,7 +102,7 @@ async def handlePart(cls:"Client", payload:str) -> bool:
 		cls.users.pop(KnownUser.name, None)
 
 	Log.debug(f"Client launching: Client.onMemberPart: {str(vars(Chan))} {str(vars(KnownUser))}")
-	asyncio.ensure_future( cls.onMemberPart(Chan, KnownUser) )
+	asyncio.ensure_future(cls.onMemberPart(Chan, KnownUser))
 	return True
 
 async def handleQuit(cls:"Client", payload:str) -> bool:
@@ -122,7 +121,7 @@ async def handleQuit(cls:"Client", payload:str) -> bool:
 
 	# name and reason
 	search = re.search(ReQuit, payload)
-	if search == None:
+	if search is None:
 		# in case we don't find anything, just ignore it, like you should with all problems in life :3
 		return True
 
@@ -145,11 +144,11 @@ async def handleQuit(cls:"Client", payload:str) -> bool:
 			Chan._helper.discard(QuitingUser.name)
 			Chan._voiced.discard(QuitingUser.name)
 
-		# and also remove it from clients user storage, which then should delete user object completly from memory
+		# and also remove it from clients user storage, which then should delete user object completely from memory
 		cls.users.pop(QuitingUser.name, None)
 
 	Log.debug(f"Client launching: Client.onMemberQuit: {str(vars(QuitingUser))} {reason}")
-	asyncio.ensure_future( cls.onMemberQuit(QuitingUser, reason) )
+	asyncio.ensure_future(cls.onMemberQuit(QuitingUser, reason))
 	return True
 
 async def handleUserList(cls:"Client", payload:str) -> bool:
@@ -163,7 +162,7 @@ async def handleUserList(cls:"Client", payload:str) -> bool:
 
 	# e.g.: :cho.ppy.sh 353 Phaazebot = #osu :The_CJ SomeoneElse +SomeoneViaIRC @SomeModerator
 	search:re.Match = re.search(ReUserListData, payload)
-	if search != None:
+	if search:
 		room_name:str = search.group(1)
 		ChannelToFill:Channel = cls.channels.get(room_name, None)
 		if not ChannelToFill: return True
@@ -171,7 +170,7 @@ async def handleUserList(cls:"Client", payload:str) -> bool:
 		full_user_list:str = search.group(2)
 		for user_name in full_user_list.split(' '):
 
-			# for whatever reason, osu! likes giving empty cahrs at the end... thanks i guess?
+			# for whatever reason, osu! likes giving empty chars at the end... thanks i guess?
 			if user_name.lower() in ['', ' ', cls.nickname.lower()]: continue
 
 			# check user type and change name, also add to usertype set
@@ -214,7 +213,7 @@ async def handlePrivMessage(cls:"Client", payload:str) -> bool:
 	# generate message
 	Msg:Message = Message(payload)
 
-	#get Channel
+	# get Channel
 	Chan:Channel = cls.channels.get(Msg.room_name, None)
 	if Chan:
 		Msg.Channel = Chan
@@ -241,14 +240,14 @@ async def handlePrivMessage(cls:"Client", payload:str) -> bool:
 
 		Msg.Author = Alternative
 		Log.debug(f"Client launching: Client.onMemberJoin: {str(vars(Chan))} {str(vars(Alternative))}")
-		asyncio.ensure_future( cls.onMemberJoin(Chan, Alternative) )
+		asyncio.ensure_future(cls.onMemberJoin(Chan, Alternative))
 
-	# safty step, add author to channels chatter list, and channel to user
+	# safety step, add author to channels chatter list, and channel to user
 	Msg.Channel.chatters[Msg.Author.name] = Msg.Author
 	Msg.Author.found_in.add(Msg.room_name)
 
 	Log.debug(f"Client launching: Client.onMessage: {str(vars(Msg))}")
-	asyncio.ensure_future( cls.onMessage(Msg) )
+	asyncio.ensure_future(cls.onMessage(Msg))
 	return True
 
 async def handleMOTDEvent(cls:"Client", payload:str) -> bool:
@@ -267,7 +266,7 @@ async def handleMOTDEvent(cls:"Client", payload:str) -> bool:
 	motd:str = Data.group(2)
 	if not motd: return False
 
-	#get Channel
+	# get Channel
 	Chan:Channel = cls.channels.get(room_name, None)
 	if not Chan: return False
 
@@ -296,7 +295,7 @@ async def handleMode(cls:"Client", payload:str) -> bool:
 	if not Chan: return False
 
 	if operation == 'o':
-		# well... basicly there should be added to operater, but osu only has admins, because on member list requests we get a:
+		# well... basically there should be added to operator, but osu only has admins, because on member list requests we get a:
 		# @username and not a &username, so it's an admin... at least for me, if im wrong, well fuck
 		Chan._admin.add(user_name) if state == '+' else Chan._admin.discard(user_name)
 		return True
