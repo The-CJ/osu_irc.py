@@ -19,7 +19,7 @@ __title__ = 'osu_irc'
 __author__ = 'The_CJ'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2018-2021 The_CJ'
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 from .Classes.channel import Channel
 from .Classes.client import Client

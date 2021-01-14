@@ -20,7 +20,7 @@ import osu_irc
 class MyBot(osu_irc.Client):
 
   async def onReady(self):
-    self.joinChannel("#osu")
+    await self.joinChannel("#osu")
     #do something
 
   async def onMessage(self, message):
